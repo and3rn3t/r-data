@@ -20,19 +20,23 @@ source(here("scripts/security.R"))  # Security module
 # LOAD DATA
 # =============================================================================
 
+# Use centralized data loading from utils.R
+# Define file mapping for all Iowa datasets
+IOWA_DATA_FILES <- c(
+  crime = "iowa_crime_data.csv",
+  housing = "iowa_housing_data.csv",
+  education = "iowa_education_data.csv",
+  economic = "iowa_economic_data.csv",
+  healthcare = "iowa_healthcare_data.csv",
+  demographics = "iowa_demographics_data.csv",
+  environment = "iowa_environment_data.csv",
+  amenities = "iowa_amenities_data.csv",
+  historical = "iowa_historical_data.csv",
+  major_cities = "iowa_major_cities.csv"
+)
+
 load_all_data <- function() {
-  list(
-    crime = safe_read_csv(here("data/raw/iowa_crime_data.csv")),
-    housing = safe_read_csv(here("data/raw/iowa_housing_data.csv")),
-    education = safe_read_csv(here("data/raw/iowa_education_data.csv")),
-    economic = safe_read_csv(here("data/raw/iowa_economic_data.csv")),
-    healthcare = safe_read_csv(here("data/raw/iowa_healthcare_data.csv")),
-    demographics = safe_read_csv(here("data/raw/iowa_demographics_data.csv")),
-    environment = safe_read_csv(here("data/raw/iowa_environment_data.csv")),
-    amenities = safe_read_csv(here("data/raw/iowa_amenities_data.csv")),
-    historical = safe_read_csv(here("data/raw/iowa_historical_data.csv")),
-    major_cities = safe_read_csv(here("data/raw/iowa_major_cities.csv"))
-  )
+  load_datasets(IOWA_DATA_FILES)
 }
 
 # Try to load cached data first, fall back to computing

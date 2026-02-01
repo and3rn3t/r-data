@@ -27,12 +27,7 @@ healthcare <- read_csv(here("data/raw/iowa_healthcare_data.csv"), show_col_types
 amenities <- read_csv(here("data/raw/iowa_amenities_data.csv"), show_col_types = FALSE)
 major_cities <- read_csv(here("data/raw/iowa_major_cities.csv"), show_col_types = FALSE)
 
-# Helper function
-normalize <- function(x, reverse = FALSE) {
-  scaled <- (x - min(x, na.rm = TRUE)) / (max(x, na.rm = TRUE) - min(x, na.rm = TRUE)) * 100
-  if (reverse) scaled <- 100 - scaled
-  return(scaled)
-}
+# normalize() function is loaded from utils.R
 
 # =============================================================================
 # CALCULATE SCORES

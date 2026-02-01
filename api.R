@@ -19,16 +19,19 @@ source(here("scripts/security.R"))
 # LOAD DATA AT STARTUP
 # =============================================================================
 
+# Use centralized data loading from utils.R
+API_DATA_FILES <- c(
+  crime = "iowa_crime_data.csv",
+  housing = "iowa_housing_data.csv",
+  education = "iowa_education_data.csv",
+  economic = "iowa_economic_data.csv",
+  healthcare = "iowa_healthcare_data.csv",
+  demographics = "iowa_demographics_data.csv",
+  major_cities = "iowa_major_cities.csv"
+)
+
 load_api_data <- function() {
-  list(
-    crime = safe_read_csv(here("data/raw/iowa_crime_data.csv")),
-    housing = safe_read_csv(here("data/raw/iowa_housing_data.csv")),
-    education = safe_read_csv(here("data/raw/iowa_education_data.csv")),
-    economic = safe_read_csv(here("data/raw/iowa_economic_data.csv")),
-    healthcare = safe_read_csv(here("data/raw/iowa_healthcare_data.csv")),
-    demographics = safe_read_csv(here("data/raw/iowa_demographics_data.csv")),
-    major_cities = safe_read_csv(here("data/raw/iowa_major_cities.csv"))
-  )
+  load_datasets(API_DATA_FILES)
 }
 
 api_data <- load_api_data()
@@ -173,9 +176,9 @@ function(region = NULL, limit = 50) {
   
   # Validate and apply region filter
   if (!is.null(region) && region != "") {
-    region <- sanitize_string(region, 50)
-    if (!is.null(region)) {
-      result <- filter(result, tolower(region) == tolower(!!region))
+    region_sanitized <- sanitize_string(region, 50)
+    if (!is.null(region_sanitized)) {
+      result <- filter(result, tolower(.data$region) == tolower(region_sanitized))
     }
   }
   
@@ -308,7 +311,12 @@ function(cities, res) {
     return(list(error = "cities parameter is required"))
   }
   
-  city_list <- strsplit(cities, ",")[[1]] %>% trimws()
+  # Split and sanitize each city name
+  city_list <- strsplit(cities, ",")[[1]] %>% 
+    trimws() %>%
+    sapply(function(c) sanitize_string(c, 50)) %>%
+    unlist() %>%
+    na.omit()
   
   if (length(city_list) < 2 || length(city_list) > 5) {
     res$status <- 400

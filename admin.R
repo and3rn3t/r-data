@@ -19,10 +19,20 @@ source(here("scripts/security.R"))
 # ADMIN CONFIGURATION
 # =============================================================================
 
-# Admin users (in production, use database or external auth)
+# Admin authentication - uses environment variables for security
+# Set ADMIN_PASSWORD environment variable before deployment
+get_admin_password_hash <- function() {
+  password <- Sys.getenv("ADMIN_PASSWORD", unset = "")
+  if (password == "") {
+    warning("ADMIN_PASSWORD not set. Using default (INSECURE - for development only)")
+    password <- "change_me_in_production"
+  }
+  digest::digest(password, algo = "sha256")
+}
+
 ADMIN_USERS <- list(
   admin = list(
-    password_hash = digest::digest("admin123", algo = "sha256"),
+    password_hash = get_admin_password_hash(),
     role = "superadmin",
     name = "Administrator"
   )

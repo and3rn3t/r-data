@@ -1,0 +1,280 @@
+---
+title: "Iowa Cities Data Analysis Report"
+author: "Data Analysis Team"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    theme: flatly
+    highlight: tango
+    code_folding: hide
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  fig.width = 10,
+  fig.height = 6
+)
+
+# Load packages
+library(tidyverse)
+library(here)
+library(scales)
+library(knitr)
+library(kableExtra)
+library(plotly)
+
+# Source utilities
+source(here("scripts/utils.R"))
+```
+
+# Executive Summary
+
+This report provides a comprehensive analysis of city data for the state of Iowa. The analysis includes population demographics, regional distribution, and geographic patterns across Iowa's municipalities.
+
+# Data Overview
+
+```{r load-data}
+# Load Iowa cities data
+if (file.exists(here("data/processed/iowa_cities_analyzed.csv"))) {
+  iowa_cities <- read_csv(here("data/processed/iowa_cities_analyzed.csv"))
+} else if (file.exists(here("data/raw/iowa_major_cities.csv"))) {
+  iowa_cities <- read_csv(here("data/raw/iowa_major_cities.csv"))
+} else {
+  stop("No Iowa cities data found. Please run the import script first.")
+}
+```
+
+The dataset contains **`r nrow(iowa_cities)` cities** in Iowa.
+
+## Data Summary
+
+```{r data-summary}
+# Quick overview of the data
+glimpse(iowa_cities)
+```
+
+## Missing Values
+
+```{r missing-values}
+count_missing(iowa_cities) %>%
+  kable(caption = "Missing Values by Variable") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+```
+
+# Population Analysis
+
+## Summary Statistics
+
+```{r pop-summary}
+pop_stats <- iowa_cities %>%
+  summarise(
+    `Number of Cities` = n(),
+    `Total Population` = sum(population_2020, na.rm = TRUE),
+    `Mean Population` = round(mean(population_2020, na.rm = TRUE), 0),
+    `Median Population` = median(population_2020, na.rm = TRUE),
+    `Minimum` = min(population_2020, na.rm = TRUE),
+    `Maximum` = max(population_2020, na.rm = TRUE),
+    `Std. Deviation` = round(sd(population_2020, na.rm = TRUE), 0)
+  ) %>%
+  pivot_longer(everything(), names_to = "Statistic", values_to = "Value")
+
+pop_stats %>%
+  mutate(Value = comma(Value)) %>%
+  kable(caption = "Population Statistics for Iowa Cities") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+## Top Cities by Population
+
+```{r top-cities-table}
+iowa_cities %>%
+  arrange(desc(population_2020)) %>%
+  head(10) %>%
+  select(City = city, County = county, `Population (2020)` = population_2020) %>%
+  mutate(`Population (2020)` = comma(`Population (2020)`)) %>%
+  kable(caption = "Top 10 Iowa Cities by Population") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+```{r top-cities-chart}
+p_top <- iowa_cities %>%
+  arrange(desc(population_2020)) %>%
+  head(15) %>%
+  ggplot(aes(x = reorder(city, population_2020), y = population_2020, 
+             text = paste("City:", city, "<br>Population:", comma(population_2020)))) +
+  geom_col(fill = "#2c7fb8") +
+  coord_flip() +
+  scale_y_continuous(labels = comma) +
+  labs(
+    title = "Top 15 Iowa Cities by Population",
+    subtitle = "2020 Census Data",
+    x = NULL,
+    y = "Population"
+  ) +
+  theme_minimal()
+
+ggplotly(p_top, tooltip = "text")
+```
+
+## Population Distribution
+
+```{r pop-distribution}
+p_dist <- iowa_cities %>%
+  ggplot(aes(x = population_2020)) +
+  geom_histogram(bins = 25, fill = "#2c7fb8", color = "white", alpha = 0.8) +
+  scale_x_log10(labels = comma) +
+  labs(
+    title = "Distribution of Iowa City Populations",
+    subtitle = "Log scale",
+    x = "Population (log scale)",
+    y = "Number of Cities"
+  ) +
+  theme_minimal()
+
+ggplotly(p_dist)
+```
+
+# Regional Analysis
+
+```{r regional-analysis}
+if ("region" %in% names(iowa_cities)) {
+  regional_summary <- iowa_cities %>%
+    group_by(Region = region) %>%
+    summarise(
+      `Number of Cities` = n(),
+      `Total Population` = sum(population_2020, na.rm = TRUE),
+      `Average Population` = round(mean(population_2020, na.rm = TRUE), 0),
+      `Largest City` = city[which.max(population_2020)]
+    ) %>%
+    arrange(desc(`Total Population`))
+  
+  regional_summary %>%
+    mutate(`Total Population` = comma(`Total Population`),
+           `Average Population` = comma(`Average Population`)) %>%
+    kable(caption = "Iowa Cities by Region") %>%
+    kable_styling(bootstrap_options = c("striped", "hover"))
+}
+```
+
+```{r regional-chart}
+if ("region" %in% names(iowa_cities)) {
+  p_region <- iowa_cities %>%
+    group_by(region) %>%
+    summarise(total_pop = sum(population_2020, na.rm = TRUE)) %>%
+    ggplot(aes(x = reorder(region, total_pop), y = total_pop, fill = region)) +
+    geom_col() +
+    coord_flip() +
+    scale_y_continuous(labels = comma) +
+    scale_fill_brewer(palette = "Set2") +
+    labs(
+      title = "Total Urban Population by Region",
+      x = NULL,
+      y = "Total Population"
+    ) +
+    theme_minimal() +
+    theme(legend.position = "none")
+  
+  ggplotly(p_region)
+}
+```
+
+# County Analysis
+
+```{r county-analysis}
+if ("county" %in% names(iowa_cities)) {
+  county_summary <- iowa_cities %>%
+    group_by(County = county) %>%
+    summarise(
+      `Number of Cities` = n(),
+      `Total Population` = sum(population_2020, na.rm = TRUE),
+      `Cities` = paste(city, collapse = ", ")
+    ) %>%
+    arrange(desc(`Total Population`)) %>%
+    head(10)
+  
+  county_summary %>%
+    mutate(`Total Population` = comma(`Total Population`)) %>%
+    kable(caption = "Top 10 Counties by Urban Population") %>%
+    kable_styling(bootstrap_options = c("striped", "hover"))
+}
+```
+
+# Geographic Distribution
+
+```{r geographic-map}
+if (all(c("latitude", "longitude") %in% names(iowa_cities))) {
+  p_map <- iowa_cities %>%
+    ggplot(aes(x = longitude, y = latitude, size = population_2020, 
+               color = region,
+               text = paste("City:", city, "<br>",
+                           "County:", county, "<br>",
+                           "Population:", comma(population_2020)))) +
+    geom_point(alpha = 0.7) +
+    scale_size_continuous(labels = comma, range = c(3, 15), guide = "none") +
+    labs(
+      title = "Geographic Distribution of Iowa Cities",
+      subtitle = "Point size indicates population",
+      x = "Longitude",
+      y = "Latitude",
+      color = "Region"
+    ) +
+    theme_minimal() +
+    coord_fixed(ratio = 1.3)
+  
+  ggplotly(p_map, tooltip = "text")
+}
+```
+
+# City Size Classification
+
+```{r size-classification}
+iowa_cities <- iowa_cities %>%
+  mutate(
+    size_category = case_when(
+      population_2020 >= 100000 ~ "Large City (100k+)",
+      population_2020 >= 50000  ~ "Medium City (50k-100k)",
+      population_2020 >= 25000  ~ "Small City (25k-50k)",
+      population_2020 >= 10000  ~ "Town (10k-25k)",
+      population_2020 >= 5000   ~ "Small Town (5k-10k)",
+      TRUE                      ~ "Village (<5k)"
+    )
+  )
+
+size_summary <- iowa_cities %>%
+  count(size_category, name = "Count") %>%
+  arrange(desc(Count))
+
+size_summary %>%
+  kable(caption = "Iowa Cities by Size Category") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+```{r size-pie-chart}
+plot_ly(size_summary, labels = ~size_category, values = ~Count, type = 'pie',
+        textposition = 'inside',
+        textinfo = 'label+percent',
+        marker = list(colors = RColorBrewer::brewer.pal(6, "Set2"))) %>%
+  layout(title = "Distribution of Cities by Size Category",
+         showlegend = FALSE)
+```
+
+# Conclusions
+
+This analysis of Iowa city data reveals:
+
+1. **Population Concentration**: The majority of Iowa's urban population is concentrated in a few large cities, with Des Moines being the largest.
+
+2. **Regional Distribution**: The Central region (including the Des Moines metro area) contains the highest urban population.
+
+3. **City Size Distribution**: Most Iowa municipalities are small towns or villages, with only a handful of cities exceeding 50,000 residents.
+
+---
+
+*Report generated on `r Sys.Date()` using R version `r getRversion()`*

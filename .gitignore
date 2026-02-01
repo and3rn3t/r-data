@@ -47,3 +47,26 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+# Output directories (optional - uncomment if you don't want to commit outputs)
+# outputs/figures/*.png
+# outputs/figures/*.jpg
+# outputs/figures/*.pdf
+# outputs/tables/*.csv
+# outputs/reports/*.html
+# outputs/reports/*.pdf
+
+# Data files (optional - uncomment to ignore data files)
+# data/raw/*
+# data/processed/*
+# data/external/*
+# !data/**/README.md
+
+# renv library (if using renv for package management)
+renv/library/
+renv/local/
+renv/cellar/
+renv/lock/
+renv/python/
+renv/staging/
+

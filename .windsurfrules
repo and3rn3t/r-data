@@ -1,0 +1,50 @@
+# Windsurf AI Rules
+
+## Project Type
+
+R data analysis workspace with Iowa cities dataset
+
+## Stack
+
+- R 4.0+, tidyverse, shiny, plotly, leaflet
+- Testing: testthat
+- Reports: rmarkdown
+
+## Code Conventions
+
+- Assignment: `<-` not `=`
+- Paths: Always `here("path/to/file")`
+- Style: snake_case, tidyverse conventions
+- Pipes: `%>%` for data chains
+
+## Entry Points
+
+- Dashboard: `shiny::runApp("app.R")`
+- Pipeline: `source("scripts/run_all_iowa_analyses.R")`
+- Tests: `testthat::test_dir("tests/testthat")`
+
+## Key Directories
+
+- `data/raw/` - Source data (immutable)
+- `data/processed/` - Derived data
+- `scripts/` - R scripts
+- `outputs/` - Generated files
+- `docs/` - Documentation
+
+## Common Functions
+
+```r
+# Load data
+df <- read_csv(here("data/raw/file.csv"), show_col_types = FALSE)
+
+# Save output
+write_csv(df, here("data/processed/output.csv"))
+ggsave(here("outputs/figures/plot.png"))
+```
+
+## Don't
+
+- Modify files in `data/raw/`
+- Use hardcoded paths
+- Use `setwd()`
+- Commit `.RData` or `.Rhistory`

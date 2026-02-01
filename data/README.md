@@ -2,63 +2,87 @@
 
 This directory contains data files for analyzing cities in the state of Iowa.
 
-## Subdirectories
+## Directory Structure
 
-- **raw/**: Original, immutable data files. Never modify files in this directory.
-- **processed/**: Cleaned and processed data files ready for analysis.
-- **external/**: External data from third-party sources.
+```
+data/
+├── raw/          # Source data (NEVER modify)
+├── processed/    # Cleaned/transformed data
+└── external/     # Third-party data
+```
 
-## Iowa City Data Sources
+## Raw Data Files
 
-### Iowa Data Portal
-- **URL**: https://data.iowa.gov/
-- **Description**: Official State of Iowa open data portal with various city datasets
-- **Updates**: Varies by dataset
+All source data in `raw/` - these files are **immutable**.
 
-### US Census Bureau
-- **URL**: https://www.census.gov/
-- **Description**: Population estimates for incorporated places
-- **Updates**: Annual estimates, decennial census
+| File | Records | Description |
+|------|---------|-------------|
+| `iowa_major_cities.csv` | 21 | City metadata (population, coordinates, region) |
+| `iowa_crime_data.csv` | 21 | Crime rates and safety metrics |
+| `iowa_housing_data.csv` | 21 | Housing market data |
+| `iowa_education_data.csv` | 21 | School and education metrics |
+| `iowa_economic_data.csv` | 20 | Income, employment, jobs |
+| `iowa_healthcare_data.csv` | 20 | Health and healthcare access |
+| `iowa_demographics_data.csv` | 20 | Age, diversity, households |
+| `iowa_environment_data.csv` | 20 | Air, water, green space |
+| `iowa_amenities_data.csv` | 20 | Quality of life metrics |
+| `iowa_infrastructure_data.csv` | 20 | Transportation, connectivity |
+| `iowa_historical_data.csv` | 20 | 1980-2020 trends |
+| `iowa_cities_census.csv` | - | US Census population data |
+| `iowa_cities_raw.csv` | - | Iowa Data Portal data |
 
-## Expected Data Files
+## Processed Data Files
 
-### Raw Data (`raw/`)
+Generated outputs in `processed/`:
+
 | File | Description |
 |------|-------------|
-| `iowa_cities_census.csv` | US Census Bureau population data |
-| `iowa_cities_raw.csv` | Iowa Data Portal city data |
-| `iowa_major_cities.csv` | Reference data for top 20 Iowa cities |
+| `iowa_cities_clean.csv` | Standardized city data |
+| `iowa_cities_analyzed.csv` | Analysis with scores |
+| `iowa_crime_analyzed.csv` | Crime analysis results |
+| `iowa_housing_analyzed.csv` | Housing analysis results |
+| `iowa_education_analyzed.csv` | Education analysis results |
+| `iowa_cities_projections_2030.csv` | Forecasts to 2030 |
+| `cleaning_log.txt` | Data cleaning log |
 
-### Processed Data (`processed/`)
-| File | Description |
-|------|-------------|
-| `iowa_cities_clean.csv` | Cleaned and standardized city data |
-| `iowa_cities_analyzed.csv` | Data with analysis results and classifications |
-| `cleaning_log.txt` | Log of data cleaning operations |
+## Data Sources
 
-## Available Variables
+| Source | URL | Data Types |
+|--------|-----|------------|
+| US Census Bureau | census.gov | Population, demographics, housing |
+| FBI UCR | ucr.fbi.gov | Crime statistics |
+| Bureau of Labor Statistics | bls.gov | Employment, wages |
+| Iowa Data Portal | data.iowa.gov | State-specific data |
 
-| Variable | Description |
-|----------|-------------|
-| `city` | City name |
-| `county` | County name |
-| `population_2020` | 2020 Census population |
-| `latitude` | Geographic latitude |
-| `longitude` | Geographic longitude |
-| `region` | Iowa region (Central, Northeast, etc.) |
-| `size_category` | City size classification |
-| `population_rank` | Rank by population |
+## Data Schema
 
-## Guidelines
+For complete column definitions, see: [../docs/DATA_DICTIONARY.md](../docs/DATA_DICTIONARY.md)
 
-1. Keep raw data unchanged - always work with copies
-2. Document data sources and collection methods
-3. Use consistent naming conventions (e.g., `YYYY-MM-DD_description.csv`)
-4. Include metadata files when applicable
+### Key Join Column
+
+All datasets use `city` as the primary key:
+
+```r
+library(tidyverse)
+library(here)
+
+full_data <- read_csv(here("data/raw/iowa_major_cities.csv")) %>%
+  left_join(read_csv(here("data/raw/iowa_crime_data.csv")), by = "city") %>%
+  left_join(read_csv(here("data/raw/iowa_housing_data.csv")), by = "city") %>%
+  left_join(read_csv(here("data/raw/iowa_education_data.csv")), by = "city")
+```
 
 ## Data Processing Workflow
 
-1. **Import**: Run `scripts/iowa_cities_import.R` to download data
-2. **Clean**: Run `scripts/iowa_cities_cleaning.R` to clean and standardize
-3. **Analyze**: Run `scripts/iowa_cities_analysis.R` for analysis
-4. **Report**: Render `notebooks/iowa_cities_report.Rmd` for full report
+1. **Import**: Run `scripts/iowa_cities_import.R`
+2. **Clean**: Run `scripts/iowa_cities_cleaning.R`
+3. **Analyze**: Run individual or `scripts/run_all_iowa_analyses.R`
+4. **Report**: Render notebooks or launch Shiny app
+
+## Guidelines
+
+1. **Never modify raw data** - always save to `processed/`
+2. **Use here() for paths** - `read_csv(here("data/raw/file.csv"))`
+3. **Document transformations** - log cleaning steps
+4. **Validate before analysis** - run `scripts/validate_data.R`
+5. **Add show_col_types = FALSE** - suppress column type messages

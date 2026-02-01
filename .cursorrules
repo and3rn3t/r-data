@@ -1,0 +1,65 @@
+# Cursor AI Rules
+
+## Project Type
+
+R data analysis workspace with Shiny web application
+
+## Tech Stack
+
+- R 4.0+
+- tidyverse ecosystem
+- Shiny + shinydashboard
+- plotly, leaflet, DT
+- testthat for testing
+- rmarkdown for reports
+
+## Code Style
+
+- Use `<-` for assignment
+- Use tidyverse style (snake_case)
+- Use `here()` for all file paths
+- Use pipes `%>%` for data chains
+- Prefer tidyverse over base R
+
+## Key Commands
+
+```r
+# Run Shiny app
+shiny::runApp("app.R")
+
+# Run all analyses
+source("scripts/run_all_iowa_analyses.R")
+
+# Run tests
+testthat::test_dir("tests/testthat")
+```
+
+## File Structure
+
+- `app.R` - Main Shiny dashboard
+- `scripts/` - R analysis scripts
+- `data/raw/` - Source data (immutable)
+- `data/processed/` - Transformed data
+- `notebooks/` - R Markdown reports
+- `outputs/` - Generated files
+
+## Data Loading Pattern
+
+```r
+library(tidyverse)
+library(here)
+df <- read_csv(here("data/raw/file.csv"), show_col_types = FALSE)
+```
+
+## Key Functions
+
+- `normalize(x, reverse = FALSE)` - Scale values 0-100
+- `compare_cities(city1, city2)` - Compare city metrics
+- `recommend_city(...)` - Get city recommendations
+
+## Avoid
+
+- Modifying `data/raw/` files
+- Hardcoded paths (use `here()`)
+- Using `setwd()`
+- Committing .RData files

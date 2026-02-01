@@ -32,33 +32,51 @@ A complete, ready-to-use workspace for data analysis with R. This repository pro
 - **Utility Functions**: Helper functions for common data manipulation tasks
 - **Best Practices**: Built-in guidance for reproducible research and clean code
 - **RStudio Integration**: Includes `.Rproj` file for seamless RStudio integration
+- **Interactive Dashboard**: Shiny app for exploring Iowa cities data
+- **Geographic Maps**: Leaflet-based interactive maps
+- **Recommendation Engine**: Find your perfect city based on priorities
+- **Predictive Analysis**: Population and home value projections to 2030
+- **Automated Reports**: PDF report generation for any city
 
 ## 📁 Directory Structure
 
 ```
 r-data/
-├── data/                    # All data files
-│   ├── raw/                # Original, immutable data
-│   ├── processed/          # Cleaned and processed data
-│   └── external/           # External data sources
-├── scripts/                # R scripts for analysis
-│   ├── 00_setup.R         # Package installation and setup
-│   ├── 01_data_import.R   # Data import examples
-│   ├── 02_data_cleaning.R # Data cleaning workflow
-│   ├── 03_exploratory_analysis.R  # EDA examples
-│   ├── 04_analysis.R      # Statistical analysis
-│   ├── 05_visualization.R # Data visualization
-│   └── utils.R            # Utility functions
-├── notebooks/              # R Markdown notebooks
-│   ├── analysis_template.Rmd
-│   └── exploratory_analysis.Rmd
-├── outputs/                # Generated outputs
-│   ├── figures/           # Plots and visualizations
-│   ├── tables/            # Generated tables
-│   └── reports/           # Rendered reports
-├── .gitignore             # Git ignore file
-├── r-data.Rproj          # RStudio project file
-└── README.md              # This file
+├── .github/                 # GitHub configuration
+│   └── copilot-instructions.md
+├── app.R                    # 🚀 Shiny dashboard (main entry point)
+├── config.yml               # Environment configuration
+├── _targets.R               # Pipeline definition
+│
+├── data/
+│   ├── raw/                 # Original data (13 datasets)
+│   ├── processed/           # Cleaned and analyzed data
+│   └── external/            # Third-party data
+│
+├── docs/                    # 📚 Documentation
+│   ├── DATA_DICTIONARY.md   # Complete dataset schemas
+│   ├── API_REFERENCE.md     # Function documentation
+│   └── ARCHITECTURE.md      # Project design
+│
+├── notebooks/               # R Markdown reports
+├── outputs/                 # Generated files
+│   ├── figures/             # Plots and charts
+│   ├── reports/             # PDF reports
+│   └── tables/              # Data exports
+│
+├── scripts/                 # R scripts
+│   ├── 00-05_*.R           # Core workflow
+│   ├── iowa_*_analysis.R   # Domain analyses
+│   ├── iowa_maps.R         # Leaflet maps
+│   ├── iowa_recommendations.R
+│   └── run_all_iowa_analyses.R
+│
+├── tests/testthat/          # Unit tests
+│
+├── AGENTS.md                # 🤖 AI agent instructions
+├── CLAUDE.md                # Claude AI context
+├── .cursorrules             # Cursor AI rules
+└── INTERACTIVE_TOOLS.md     # Interactive tools guide
 ```
 
 ## 🚀 Getting Started
@@ -203,16 +221,31 @@ clean_data <- standardize_names(my_data)
 ## 📖 Additional Resources
 
 ### Included Documentation
-- **[QUICKSTART.md](QUICKSTART.md)** - 5-minute setup guide with common tasks
-- **[example_workflow.R](example_workflow.R)** - Complete working example from data to results
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Guidelines for contributing
-- **Directory READMEs** - Specific guidance for each folder
+
+| Document | Description |
+|----------|-------------|
+| [QUICKSTART.md](QUICKSTART.md) | 5-minute setup guide |
+| [INTERACTIVE_TOOLS.md](INTERACTIVE_TOOLS.md) | Dashboard & tools guide |
+| [docs/DATA_DICTIONARY.md](docs/DATA_DICTIONARY.md) | Complete dataset schemas |
+| [docs/API_REFERENCE.md](docs/API_REFERENCE.md) | Function documentation |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Project design & structure |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution guidelines |
+
+### AI Agent Instructions
+
+| File | AI Tool |
+|------|--------|
+| [AGENTS.md](AGENTS.md) | Generic AI agents |
+| [CLAUDE.md](CLAUDE.md) | Claude / Anthropic |
+| [.cursorrules](.cursorrules) | Cursor IDE |
+| [.github/copilot-instructions.md](.github/copilot-instructions.md) | GitHub Copilot |
 
 ### External Learning Resources
+
 - [R for Data Science](https://r4ds.had.co.nz/) - Free online book
 - [RStudio Cheatsheets](https://posit.co/resources/cheatsheets/) - Quick references
 - [Tidyverse Documentation](https://www.tidyverse.org/) - Package guides
-- [R Markdown Guide](https://rmarkdown.rstudio.com/) - Report creation
+- [Shiny Documentation](https://shiny.posit.co/) - Dashboard development
 
 ## 🤝 Contributing
 

@@ -48,13 +48,19 @@ po/*~
 # RStudio Connect folder
 rsconnect/
 
-# Output directories (optional - uncomment if you don't want to commit outputs)
+# targets pipeline
+_targets/
+
+# Large output files (uncomment if needed)
 # outputs/figures/*.png
 # outputs/figures/*.jpg
 # outputs/figures/*.pdf
 # outputs/tables/*.csv
 # outputs/reports/*.html
 # outputs/reports/*.pdf
+
+# Interactive maps (can be large)
+# outputs/*.html
 
 # Data files (optional - uncomment to ignore data files)
 # data/raw/*
@@ -70,3 +76,13 @@ renv/lock/
 renv/python/
 renv/staging/
 
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db

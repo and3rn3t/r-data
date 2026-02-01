@@ -1,0 +1,42 @@
+# Project Configuration File
+# Use with config::get() to load environment-specific settings
+# ============================================================
+
+default:
+  project_name: "Iowa Cities Data Analysis"
+  author: "Your Name"
+  
+  # Data paths
+  data:
+    raw_dir: "data/raw"
+    processed_dir: "data/processed"
+    external_dir: "data/external"
+  
+  # Output settings
+  outputs:
+    figures_dir: "outputs/figures"
+    tables_dir: "outputs/tables"
+    reports_dir: "outputs/reports"
+    figure_width: 10
+    figure_height: 6
+    figure_dpi: 300
+  
+  # Analysis parameters
+  analysis:
+    confidence_level: 0.95
+    seed: 42
+    missing_threshold: 0.10  # Flag columns with >10% missing
+
+development:
+  inherits: default
+  analysis:
+    verbose: TRUE
+    save_intermediates: TRUE
+
+production:
+  inherits: default
+  analysis:
+    verbose: FALSE
+    save_intermediates: FALSE
+  outputs:
+    figure_dpi: 600

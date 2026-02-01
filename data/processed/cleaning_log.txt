@@ -1,0 +1,27 @@
+Iowa Cities Data Cleaning Log
+=============================
+Date: 2026-02-01 14:06:50.585217 
+Source: Census 
+Original rows: 940 
+Cleaned rows: 940 
+Columns: 18 
+
+Column names:
+- city
+- population_2020
+- sumlev
+- state
+- county
+- place
+- cousub
+- concit
+- primgeo_flag
+- funcstat
+- stname
+- estimatesbase2020
+- popestimate2021
+- popestimate2022
+- popestimate2023
+- size_category
+- population_rank
+- region

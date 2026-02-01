@@ -1,0 +1,21 @@
+city,county,population_2020,latitude,longitude,region
+Des Moines,Polk,214237,41.5868,-93.625,Central
+Cedar Rapids,Linn,137710,41.9779,-91.6656,East Central
+Davenport,Scott,101724,41.5236,-90.5776,East
+Sioux City,Woodbury,85797,42.4963,-96.4003,Northwest
+Iowa City,Johnson,74828,41.6611,-91.5302,East Central
+Waterloo,Black Hawk,67314,42.4928,-92.3426,Northeast
+Ames,Story,66427,42.0308,-93.6319,Central
+West Des Moines,Polk,68723,41.5772,-93.7113,Central
+Ankeny,Polk,67355,41.7318,-93.605,Central
+Council Bluffs,Pottawattamie,62230,41.2619,-95.8608,Southwest
+Dubuque,Dubuque,59667,42.5006,-90.6646,Northeast
+Urbandale,Polk,45580,41.6267,-93.7122,Central
+Cedar Falls,Black Hawk,40713,42.5349,-92.4535,Northeast
+Marion,Linn,40359,42.0341,-91.5946,East Central
+Bettendorf,Scott,39102,41.5246,-90.516,East
+Mason City,Cerro Gordo,27088,43.1536,-93.201,North Central
+Marshalltown,Marshall,26486,42.0494,-92.908,Central
+Clinton,Clinton,24462,41.8445,-90.1887,East
+Burlington,Des Moines,24505,40.8075,-91.1129,Southeast
+Fort Dodge,Webster,24264,42.4974,-94.168,North Central

@@ -1,0 +1,507 @@
+---
+title: "Iowa Cities Comprehensive Dashboard"
+author: "Data Analysis Team"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    theme: flatly
+    highlight: tango
+    code_folding: hide
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  fig.width = 10,
+  fig.height = 6
+)
+
+library(tidyverse)
+library(here)
+library(scales)
+library(knitr)
+library(kableExtra)
+library(plotly)
+library(DT)
+library(RColorBrewer)
+
+source(here("scripts/utils.R"))
+```
+
+# Executive Summary {.tabset}
+
+This comprehensive dashboard analyzes Iowa cities across four key dimensions:
+
+- **Demographics & Population**: City sizes and geographic distribution
+- **Economic Indicators**: Income, employment, and industry
+- **Housing Market**: Home values, rents, and affordability
+- **Education**: School performance and educational attainment
+- **Public Safety**: Crime rates and safety metrics
+
+## Key Findings
+
+```{r load-all-data}
+# Load all datasets
+cities <- if(file.exists(here("data/processed/iowa_cities_analyzed.csv"))) {
+  read_csv(here("data/processed/iowa_cities_analyzed.csv"), show_col_types = FALSE)
+} else if(file.exists(here("data/raw/iowa_major_cities.csv"))) {
+  read_csv(here("data/raw/iowa_major_cities.csv"), show_col_types = FALSE)
+} else NULL
+
+economic <- if(file.exists(here("data/processed/iowa_economic_analyzed.csv"))) {
+  read_csv(here("data/processed/iowa_economic_analyzed.csv"), show_col_types = FALSE)
+} else if(file.exists(here("data/raw/iowa_economic_data.csv"))) {
+  read_csv(here("data/raw/iowa_economic_data.csv"), show_col_types = FALSE)
+} else NULL
+
+housing <- if(file.exists(here("data/processed/iowa_housing_analyzed.csv"))) {
+  read_csv(here("data/processed/iowa_housing_analyzed.csv"), show_col_types = FALSE)
+} else if(file.exists(here("data/raw/iowa_housing_data.csv"))) {
+  read_csv(here("data/raw/iowa_housing_data.csv"), show_col_types = FALSE)
+} else NULL
+
+education <- if(file.exists(here("data/processed/iowa_education_analyzed.csv"))) {
+  read_csv(here("data/processed/iowa_education_analyzed.csv"), show_col_types = FALSE)
+} else if(file.exists(here("data/raw/iowa_education_data.csv"))) {
+  read_csv(here("data/raw/iowa_education_data.csv"), show_col_types = FALSE)
+} else NULL
+
+crime <- if(file.exists(here("data/processed/iowa_crime_analyzed.csv"))) {
+  read_csv(here("data/processed/iowa_crime_analyzed.csv"), show_col_types = FALSE)
+} else if(file.exists(here("data/raw/iowa_crime_data.csv"))) {
+  read_csv(here("data/raw/iowa_crime_data.csv"), show_col_types = FALSE)
+} else NULL
+```
+
+```{r key-stats}
+# Create summary cards
+summary_stats <- tibble(
+  Category = c("Cities Analyzed", "Total Population", "Avg Median Income", 
+               "Avg Home Value", "Avg Graduation Rate", "Avg Safety Index"),
+  Value = c(
+    if(!is.null(cities)) nrow(cities) else "N/A",
+    if(!is.null(cities)) comma(sum(cities$population_2020, na.rm = TRUE)) else "N/A",
+    if(!is.null(economic)) dollar(mean(economic$median_household_income, na.rm = TRUE)) else "N/A",
+    if(!is.null(housing)) dollar(mean(housing$median_home_value, na.rm = TRUE)) else "N/A",
+    if(!is.null(education)) paste0(round(mean(education$graduation_rate, na.rm = TRUE), 1), "%") else "N/A",
+    if(!is.null(crime) && "safety_index" %in% names(crime)) round(mean(crime$safety_index, na.rm = TRUE), 1) else "N/A"
+  )
+)
+
+summary_stats %>%
+  kable(caption = "Iowa Cities Overview") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+---
+
+# Population & Demographics {.tabset}
+
+## Top Cities
+
+```{r pop-chart}
+if(!is.null(cities)) {
+  p <- cities %>%
+    arrange(desc(population_2020)) %>%
+    head(15) %>%
+    ggplot(aes(x = reorder(city, population_2020), y = population_2020,
+               text = paste("City:", city, "<br>Population:", comma(population_2020)))) +
+    geom_col(fill = "#2c7fb8") +
+    coord_flip() +
+    scale_y_continuous(labels = comma) +
+    labs(title = "Top 15 Iowa Cities by Population", x = NULL, y = "Population") +
+    theme_minimal()
+  
+  ggplotly(p, tooltip = "text")
+}
+```
+
+## Geographic Distribution
+
+```{r geo-map}
+if(!is.null(cities) && all(c("latitude", "longitude") %in% names(cities))) {
+  p <- cities %>%
+    ggplot(aes(x = longitude, y = latitude, size = population_2020,
+               text = paste("City:", city, "<br>Pop:", comma(population_2020)))) +
+    geom_point(aes(color = region), alpha = 0.7) +
+    scale_size_continuous(labels = comma, range = c(3, 15)) +
+    labs(title = "Iowa Cities Map", x = "Longitude", y = "Latitude") +
+    theme_minimal() +
+    coord_fixed(ratio = 1.3)
+  
+  ggplotly(p, tooltip = "text")
+}
+```
+
+---
+
+# Economic Analysis {.tabset}
+
+## Income Comparison
+
+```{r income-chart}
+if(!is.null(economic)) {
+  p <- economic %>%
+    arrange(desc(median_household_income)) %>%
+    head(15) %>%
+    ggplot(aes(x = reorder(city, median_household_income), 
+               y = median_household_income,
+               text = paste("City:", city, "<br>Income:", dollar(median_household_income)))) +
+    geom_col(aes(fill = median_household_income)) +
+    coord_flip() +
+    scale_y_continuous(labels = dollar) +
+    scale_fill_gradient(low = "#fee8c8", high = "#e34a33", guide = "none") +
+    labs(title = "Median Household Income by City", x = NULL, y = "Median Income") +
+    theme_minimal()
+  
+  ggplotly(p, tooltip = "text")
+}
+```
+
+## Employment
+
+```{r employment-chart}
+if(!is.null(economic)) {
+  p <- economic %>%
+    ggplot(aes(x = unemployment_rate, y = labor_force_participation,
+               size = population,
+               text = paste("City:", city, "<br>Unemployment:", unemployment_rate, "%",
+                           "<br>Labor Force:", labor_force_participation, "%"))) +
+    geom_point(aes(color = median_household_income), alpha = 0.7) +
+    scale_size_continuous(range = c(3, 15), guide = "none") +
+    scale_color_gradient(low = "#fee8c8", high = "#e34a33", labels = dollar) +
+    labs(title = "Employment Metrics", 
+         x = "Unemployment Rate (%)", 
+         y = "Labor Force Participation (%)",
+         color = "Median Income") +
+    theme_minimal()
+  
+  ggplotly(p, tooltip = "text")
+}
+```
+
+## Industry Mix
+
+```{r industry-chart}
+if(!is.null(economic) && "major_industry" %in% names(economic)) {
+  p <- economic %>%
+    count(major_industry) %>%
+    ggplot(aes(x = reorder(major_industry, n), y = n, fill = major_industry)) +
+    geom_col() +
+    coord_flip() +
+    labs(title = "Primary Industries in Iowa Cities", x = NULL, y = "Number of Cities") +
+    theme_minimal() +
+    theme(legend.position = "none")
+  
+  ggplotly(p)
+}
+```
+
+---
+
+# Housing Market {.tabset}
+
+## Home Values
+
+```{r home-values}
+if(!is.null(housing)) {
+  p <- housing %>%
+    arrange(desc(median_home_value)) %>%
+    ggplot(aes(x = reorder(city, median_home_value), y = median_home_value,
+               text = paste("City:", city, "<br>Value:", dollar(median_home_value),
+                           "<br>Change:", home_value_change_1yr, "%"))) +
+    geom_col(aes(fill = home_value_change_1yr)) +
+    coord_flip() +
+    scale_y_continuous(labels = dollar) +
+    scale_fill_gradient2(low = "#2166ac", mid = "#f7f7f7", high = "#b2182b", midpoint = 5) +
+    labs(title = "Median Home Values", x = NULL, y = "Home Value", fill = "YoY Change %") +
+    theme_minimal()
+  
+  ggplotly(p, tooltip = "text")
+}
+```
+
+## Rental Market
+
+```{r rental-market}
+if(!is.null(housing)) {
+  p <- housing %>%
+    ggplot(aes(x = median_home_value, y = median_rent,
+               size = population,
+               text = paste("City:", city, "<br>Home Value:", dollar(median_home_value),
+                           "<br>Rent:", dollar(median_rent)))) +
+    geom_point(aes(color = owner_occupied_pct), alpha = 0.7) +
+    geom_smooth(method = "lm", se = FALSE, color = "gray50", linetype = "dashed") +
+    scale_x_continuous(labels = dollar) +
+    scale_y_continuous(labels = dollar) +
+    scale_size_continuous(range = c(3, 15), guide = "none") +
+    scale_color_gradient(low = "#fee8c8", high = "#1a9850") +
+    labs(title = "Home Values vs Rent", x = "Median Home Value", y = "Median Rent",
+         color = "Ownership %") +
+    theme_minimal()
+  
+  ggplotly(p, tooltip = "text")
+}
+```
+
+## Affordability
+
+```{r affordability}
+if(!is.null(housing) && "affordability_index" %in% names(housing)) {
+  p <- housing %>%
+    arrange(desc(affordability_index)) %>%
+    ggplot(aes(x = reorder(city, affordability_index), y = affordability_index,
+               fill = affordability_index)) +
+    geom_col() +
+    coord_flip() +
+    scale_fill_gradient(low = "#fee8c8", high = "#1a9850") +
+    labs(title = "Housing Affordability Index", 
+         subtitle = "Higher = More Affordable",
+         x = NULL, y = "Affordability Index") +
+    theme_minimal() +
+    theme(legend.position = "none")
+  
+  ggplotly(p)
+}
+```
+
+---
+
+# Education {.tabset}
+
+## School Performance
+
+```{r school-performance}
+if(!is.null(education)) {
+  p <- education %>%
+    ggplot(aes(x = reorder(city, state_assessment_score), y = state_assessment_score,
+               text = paste("City:", city, "<br>Score:", state_assessment_score,
+                           "<br>Grad Rate:", graduation_rate, "%"))) +
+    geom_col(aes(fill = state_assessment_score)) +
+    coord_flip() +
+    scale_fill_gradient2(low = "#d73027", mid = "#ffffbf", high = "#1a9850", midpoint = 65) +
+    labs(title = "School District Performance", x = NULL, y = "Assessment Score") +
+    theme_minimal() +
+    theme(legend.position = "none")
+  
+  ggplotly(p, tooltip = "text")
+}
+```
+
+## Graduation Rates
+
+```{r graduation-rates}
+if(!is.null(education)) {
+  p <- education %>%
+    ggplot(aes(x = reorder(city, graduation_rate), y = graduation_rate,
+               fill = graduation_rate >= 90)) +
+    geom_col() +
+    geom_hline(yintercept = 90, linetype = "dashed", color = "darkgreen") +
+    coord_flip() +
+    scale_fill_manual(values = c("TRUE" = "#1a9850", "FALSE" = "#fc8d59"), guide = "none") +
+    labs(title = "High School Graduation Rates", 
+         subtitle = "Green line = 90% target",
+         x = NULL, y = "Graduation Rate (%)") +
+    theme_minimal()
+  
+  ggplotly(p)
+}
+```
+
+## Educational Attainment
+
+```{r ed-attainment}
+if(!is.null(education)) {
+  p <- education %>%
+    arrange(desc(pct_bachelors)) %>%
+    head(15) %>%
+    ggplot(aes(x = reorder(city, pct_bachelors), y = pct_bachelors,
+               text = paste("City:", city, "<br>Bachelor's:", pct_bachelors, "%",
+                           "<br>Graduate:", pct_graduate_degree, "%"))) +
+    geom_col(aes(fill = has_university)) +
+    coord_flip() +
+    scale_fill_manual(values = c("TRUE" = "#2166ac", "FALSE" = "#92c5de"),
+                       labels = c("No University", "Has University")) +
+    labs(title = "Bachelor's Degree Attainment", x = NULL, y = "% with Bachelor's Degree",
+         fill = NULL) +
+    theme_minimal()
+  
+  ggplotly(p, tooltip = "text")
+}
+```
+
+---
+
+# Public Safety {.tabset}
+
+## Crime Overview
+
+```{r crime-overview}
+if(!is.null(crime)) {
+  p <- crime %>%
+    ggplot(aes(x = reorder(city, -violent_crime_rate), y = violent_crime_rate,
+               text = paste("City:", city, "<br>Violent:", violent_crime_rate,
+                           "<br>Property:", property_crime_rate))) +
+    geom_col(aes(fill = violent_crime_rate)) +
+    coord_flip() +
+    scale_fill_gradient(low = "#1a9850", high = "#d73027") +
+    labs(title = "Violent Crime Rates", 
+         subtitle = "Per 100,000 residents",
+         x = NULL, y = "Violent Crime Rate") +
+    theme_minimal() +
+    theme(legend.position = "none")
+  
+  ggplotly(p, tooltip = "text")
+}
+```
+
+## Safety Index
+
+```{r safety-index}
+if(!is.null(crime) && "safety_index" %in% names(crime)) {
+  p <- crime %>%
+    arrange(desc(safety_index)) %>%
+    ggplot(aes(x = reorder(city, safety_index), y = safety_index,
+               fill = safety_index)) +
+    geom_col() +
+    coord_flip() +
+    scale_fill_gradient(low = "#d73027", high = "#1a9850") +
+    labs(title = "City Safety Index", 
+         subtitle = "Higher = Safer",
+         x = NULL, y = "Safety Index") +
+    theme_minimal() +
+    theme(legend.position = "none")
+  
+  ggplotly(p)
+}
+```
+
+## Crime Comparison
+
+```{r crime-scatter}
+if(!is.null(crime)) {
+  p <- crime %>%
+    ggplot(aes(x = violent_crime_rate, y = property_crime_rate,
+               size = population,
+               text = paste("City:", city, "<br>Violent:", violent_crime_rate,
+                           "<br>Property:", property_crime_rate))) +
+    geom_point(aes(color = officers_per_1000), alpha = 0.7) +
+    scale_size_continuous(range = c(3, 15), guide = "none") +
+    scale_color_gradient(low = "#fee8c8", high = "#2166ac") +
+    labs(title = "Violent vs Property Crime", 
+         x = "Violent Crime Rate (per 100k)", 
+         y = "Property Crime Rate (per 100k)",
+         color = "Officers\nper 1000") +
+    theme_minimal()
+  
+  ggplotly(p, tooltip = "text")
+}
+```
+
+---
+
+# City Rankings {.tabset}
+
+## Overall Comparison
+
+```{r combined-rankings}
+# Create combined rankings table
+if(!is.null(economic) && !is.null(housing) && !is.null(education) && !is.null(crime)) {
+  
+  # Combine key metrics
+  rankings <- economic %>%
+    select(city, median_household_income) %>%
+    left_join(housing %>% select(city, median_home_value, median_rent), by = "city") %>%
+    left_join(education %>% select(city, graduation_rate, state_assessment_score), by = "city") %>%
+    left_join(crime %>% select(city, violent_crime_rate, safety_index), by = "city")
+  
+  # Calculate overall score
+  rankings <- rankings %>%
+    mutate(
+      income_rank = dense_rank(desc(median_household_income)),
+      education_rank = dense_rank(desc(graduation_rate)),
+      safety_rank = dense_rank(desc(safety_index)),
+      overall_score = (income_rank + education_rank + safety_rank) / 3
+    ) %>%
+    arrange(overall_score)
+  
+  rankings %>%
+    select(city, median_household_income, graduation_rate, safety_index, overall_score) %>%
+    mutate(
+      median_household_income = dollar(median_household_income),
+      graduation_rate = paste0(graduation_rate, "%"),
+      safety_index = round(safety_index, 1),
+      overall_score = round(overall_score, 1)
+    ) %>%
+    datatable(
+      caption = "Iowa City Rankings (Lower Overall Score = Better)",
+      options = list(pageLength = 20, dom = 'Bfrtip'),
+      rownames = FALSE
+    )
+}
+```
+
+## Interactive Data Explorer
+
+```{r data-explorer}
+if(!is.null(economic) && !is.null(housing) && !is.null(education) && !is.null(crime)) {
+  
+  full_data <- economic %>%
+    select(city, county, population, median_household_income, 
+           unemployment_rate, poverty_rate) %>%
+    left_join(housing %>% select(city, median_home_value, median_rent, 
+                                  owner_occupied_pct), by = "city") %>%
+    left_join(education %>% select(city, graduation_rate, 
+                                    pct_bachelors, college_readiness_pct), by = "city") %>%
+    left_join(crime %>% select(city, violent_crime_rate, 
+                                property_crime_rate, safety_index), by = "city")
+  
+  full_data %>%
+    mutate(
+      median_household_income = dollar(median_household_income),
+      median_home_value = dollar(median_home_value),
+      median_rent = dollar(median_rent)
+    ) %>%
+    datatable(
+      caption = "Complete Iowa City Data",
+      filter = "top",
+      options = list(
+        pageLength = 10,
+        scrollX = TRUE,
+        dom = 'Bfrtip'
+      ),
+      rownames = FALSE
+    )
+}
+```
+
+---
+
+# Methodology
+
+## Data Sources
+
+- **Population Data**: US Census Bureau, Iowa Data Portal
+- **Economic Data**: American Community Survey (ACS), Bureau of Labor Statistics
+- **Housing Data**: Zillow, Census ACS, Realtor.com
+- **Education Data**: Iowa Department of Education, NCES
+- **Crime Data**: FBI Uniform Crime Report (UCR), Iowa Department of Public Safety
+
+## Index Calculations
+
+All composite indices are calculated using normalized metrics (0-100 scale) with weighted averages:
+
+- **Economic Health Index**: Income (30%), Poverty (25%), Unemployment (25%), Labor Force (20%)
+- **Housing Affordability Index**: Home Value (50%), Rent (40%), Vacancy (10%)
+- **Education Quality Index**: Assessment (35%), Graduation (30%), College Ready (25%), Spending (10%)
+- **Safety Index**: Violent Crime (40%), Property Crime (30%), Traffic (15%), Response Time (15%)
+
+---
+
+*Report generated on `r Sys.Date()` using R version `r getRversion()`*

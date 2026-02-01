@@ -1,0 +1,155 @@
+name: Scheduled Data Refresh
+
+on:
+  schedule:
+    # Run weekly on Sunday at 6 AM UTC
+    - cron: '0 6 * * 0'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run in dry-run mode (validate only)'
+        required: false
+        default: 'false'
+        type: boolean
+      dataset:
+        description: 'Specific dataset to refresh (leave empty for all)'
+        required: false
+        default: ''
+        type: string
+
+env:
+  CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
+  FBI_API_KEY: ${{ secrets.FBI_API_KEY }}
+  BLS_API_KEY: ${{ secrets.BLS_API_KEY }}
+
+jobs:
+  data-refresh:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev
+
+      - name: Install R dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          packages: |
+            tidyverse
+            httr2
+            jsonlite
+            here
+
+      - name: Check data freshness
+        id: check
+        run: |
+          source("scripts/data_refresh.R")
+          
+          datasets <- c("iowa_crime_data", "iowa_housing_data", "iowa_education_data",
+                        "iowa_economic_data", "iowa_healthcare_data")
+          
+          stale <- sapply(datasets, function(ds) needs_refresh(ds, max_age_days = 7))
+          stale_datasets <- datasets[stale]
+          
+          if (length(stale_datasets) > 0) {
+            cat("STALE_DATASETS=", paste(stale_datasets, collapse = ","), "\n", file = Sys.getenv("GITHUB_OUTPUT"), append = TRUE)
+            cat("HAS_STALE=true\n", file = Sys.getenv("GITHUB_OUTPUT"), append = TRUE)
+          } else {
+            cat("HAS_STALE=false\n", file = Sys.getenv("GITHUB_OUTPUT"), append = TRUE)
+          }
+        shell: Rscript {0}
+
+      - name: Run data refresh
+        if: steps.check.outputs.HAS_STALE == 'true' || github.event.inputs.dataset != ''
+        run: |
+          source("scripts/data_refresh.R")
+          
+          dry_run <- "${{ github.event.inputs.dry_run }}" == "true"
+          dataset <- "${{ github.event.inputs.dataset }}"
+          
+          if (dataset != "") {
+            run_etl_pipeline(dataset, dry_run = dry_run)
+          } else {
+            run_all_etl(dry_run = dry_run)
+          }
+        shell: Rscript {0}
+
+      - name: Update cache
+        if: steps.check.outputs.HAS_STALE == 'true' && github.event.inputs.dry_run != 'true'
+        run: |
+          if (file.exists("scripts/update_cache.R")) {
+            source("scripts/update_cache.R")
+          }
+        shell: Rscript {0}
+
+      - name: Commit updated data
+        if: steps.check.outputs.HAS_STALE == 'true' && github.event.inputs.dry_run != 'true'
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: automated data refresh [skip ci]"
+          file_pattern: "data/raw/*.csv data/cache/*.rds"
+          commit_author: "GitHub Actions <actions@github.com>"
+
+      - name: Upload ETL logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: etl-logs-${{ github.run_id }}
+          path: outputs/logs/etl/
+          retention-days: 30
+
+      - name: Create summary
+        run: |
+          echo "## 📊 Data Refresh Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ steps.check.outputs.HAS_STALE }}" == "true" ]; then
+            echo "**Status:** Data refresh completed" >> $GITHUB_STEP_SUMMARY
+            echo "**Datasets refreshed:** ${{ steps.check.outputs.STALE_DATASETS }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Status:** All datasets are up to date" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Dry run:** ${{ github.event.inputs.dry_run || 'false' }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Triggered by:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+
+  notify:
+    needs: data-refresh
+    runs-on: ubuntu-latest
+    if: failure()
+    
+    steps:
+      - name: Create issue on failure
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `Data Refresh Failed - ${new Date().toISOString().split('T')[0]}`;
+            const body = `
+            ## Data Refresh Pipeline Failed
+            
+            **Workflow Run:** [${context.runId}](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
+            **Triggered by:** ${context.eventName}
+            **Time:** ${new Date().toISOString()}
+            
+            Please check the workflow logs for details.
+            `;
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['bug', 'data-refresh']
+            });

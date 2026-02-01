@@ -1,0 +1,41 @@
+# Dockerfile for Iowa Cities API (Plumber)
+# Multi-stage build for production API deployment
+
+# Stage 1: Base with R and dependencies
+FROM rocker/r-ver:4.3.2 AS base
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    libxml2-dev \
+    libsodium-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install R packages
+RUN R -e "install.packages(c('plumber', 'tidyverse', 'here', 'jsonlite', 'digest'), repos='https://cloud.r-project.org/')"
+
+# Stage 2: Production API
+FROM base AS production
+
+WORKDIR /app
+
+# Copy only necessary files
+COPY api.R .
+COPY scripts/utils.R scripts/
+COPY scripts/constants.R scripts/
+COPY scripts/security.R scripts/
+COPY data/raw/*.csv data/raw/
+
+# Create directories
+RUN mkdir -p outputs/logs/api
+
+# Expose API port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Run the API
+CMD ["R", "-e", "plumber::plumb('api.R')$run(host='0.0.0.0', port=8000)"]

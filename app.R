@@ -14,6 +14,7 @@ library(shinycssloaders)  # For loading spinners
 # Load project utilities
 source(here("scripts/utils.R"))
 source(here("scripts/constants.R"))
+source(here("scripts/security.R"))  # Security module
 
 # =============================================================================
 # LOAD DATA
@@ -523,6 +524,36 @@ ui <- dashboardPage(
 server <- function(input, output, session) {
   
   # -------------------------------------------------------------------------
+  # Security Context Initialization
+  # -------------------------------------------------------------------------
+  
+  security_ctx <- create_security_context(session)
+  
+  # Secure input validation wrapper
+  secure_city_input <- function(city) {
+    if (!validate_city_input(city, cities)) {
+      record_failed_validation(security_ctx)
+      log_security_event("INVALID_CITY_INPUT", city %||% "NULL", session_id)
+      return(NULL)
+    }
+    city
+  }
+  
+  # Rate-limited action wrapper
+  rate_limited_action <- function(action_name, action_fn) {
+    check <- check_rate_limit(security_ctx$rate_limiter, action_name)
+    if (!check$allowed) {
+      log_security_event("RATE_LIMIT_EXCEEDED", action_name, session_id)
+      showNotification(
+        paste("Too many requests. Please wait", check$wait_seconds, "seconds."),
+        type = "warning"
+      )
+      return(NULL)
+    }
+    action_fn()
+  }
+  
+  # -------------------------------------------------------------------------
   # Session Logging
   # -------------------------------------------------------------------------
   
@@ -563,19 +594,27 @@ server <- function(input, output, session) {
   })
   
   # -------------------------------------------------------------------------
-  # Input Validation Helpers
+  # Input Validation Helpers (Enhanced with Security)
   # -------------------------------------------------------------------------
   
   validate_city <- function(city) {
-    if (is.null(city) || city == "" || !city %in% cities) {
-      return(FALSE)
-    }
-    TRUE
+    # Use security module for validation
+    validate_city_input(city, cities)
   }
   
   safe_filter_city <- function(data, city_name) {
-    if (!validate_city(city_name)) return(data[0, ])
-    filter(data, city == city_name)
+    validated <- secure_city_input(city_name)
+    if (is.null(validated)) return(data[0, ])
+    filter(data, city == validated)
+  }
+  
+  # Allowed categories for dropdown validation
+  allowed_categories <- c("overall_score", "safety_score", "housing_score",
+                          "education_score", "economic_score", "healthcare_score",
+                          "livability_score_calc")
+  
+  validate_ranking_category <- function(category) {
+    validate_category(category, allowed_categories)
   }
   
   # -------------------------------------------------------------------------

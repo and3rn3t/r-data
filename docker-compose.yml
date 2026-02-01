@@ -25,6 +25,27 @@ services:
       retries: 3
       start_period: 10s
 
+  # REST API (Plumber)
+  iowa-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: iowa-cities-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data:ro
+      - ./outputs/logs/api:/app/outputs/logs/api
+    environment:
+      - API_LOG_LEVEL=INFO
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
   # Development mode with live reload
   iowa-dashboard-dev:
     build:
@@ -45,8 +66,14 @@ services:
 # Usage:
 # ==================================
 #
-# Production:
+# Production Dashboard:
 #   docker-compose up -d iowa-dashboard
+#
+# Production API:
+#   docker-compose up -d iowa-api
+#
+# Both services:
+#   docker-compose up -d iowa-dashboard iowa-api
 #
 # Development:
 #   docker-compose --profile dev up iowa-dashboard-dev

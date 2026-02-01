@@ -1,0 +1,271 @@
+---
+title: "REST API Guide"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{REST API Guide}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
+```
+## Overview
+
+The Iowa Cities Data API provides RESTful endpoints for programmatic access to city data, scores, and analytics. Built with the [plumber](https://www.rplumber.io/) package.
+
+## Quick Start
+
+### Running the API
+
+```r
+# Install plumber if needed
+install.packages("plumber")
+
+# Start the API server
+plumber::plumb("api.R")$run(host = "0.0.0.0", port = 8000)
+```
+
+### Docker Deployment
+
+```bash
+# Build and run
+docker-compose up -d iowa-api
+
+# Or manually
+docker build -t iowa-api -f Dockerfile.api .
+docker run -p 8000:8000 iowa-api
+```
+
+Access at: `http://localhost:8000`
+
+## API Endpoints
+
+### System Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/health` | Health check - returns API status |
+| GET | `/info` | API information and available endpoints |
+
+**Example:**
+```bash
+curl http://localhost:8000/health
+```
+
+```json
+{
+  "status": "healthy",
+  "timestamp": "2026-02-01T12:00:00Z",
+  "version": "1.0.0"
+}
+```
+
+### Cities Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/cities` | List all Iowa cities |
+| GET | `/cities/{city}` | Get detailed data for a specific city |
+
+**Query Parameters for `/cities`:**
+
+- `region` - Filter by region (e.g., "Central", "Eastern")
+- `limit` - Maximum results (1-100, default 50)
+
+**Examples:**
+```bash
+# Get all cities
+curl "http://localhost:8000/cities"
+
+# Filter by region
+curl "http://localhost:8000/cities?region=Central&limit=10"
+
+# Get specific city
+curl "http://localhost:8000/cities/Des%20Moines"
+```
+
+### Rankings Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/scores` | Get city rankings and scores |
+| GET | `/scores/{city}` | Get scores for a specific city |
+
+**Query Parameters for `/scores`:**
+
+- `category` - Score category: `overall`, `safety`, `housing`, `education`, `economic`
+- `order` - Sort order: `desc` (default) or `asc`
+- `limit` - Maximum results (1-50, default 20)
+
+**Examples:**
+```bash
+# Top 10 safest cities
+curl "http://localhost:8000/scores?category=safety&limit=10"
+
+# Most affordable housing (ascending)
+curl "http://localhost:8000/scores?category=housing&order=asc&limit=5"
+
+# Specific city score
+curl "http://localhost:8000/scores/Ames"
+```
+
+**Response:**
+```json
+{
+  "city": "Ames",
+  "rank": 3,
+  "total_cities": 30,
+  "scores": {
+    "overall": 78.5,
+    "safety": 82.1,
+    "housing": 71.3,
+    "education": 89.2,
+    "economic": 71.4
+  }
+}
+```
+
+### Comparison Endpoint
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/compare` | Compare 2-5 cities side-by-side |
+
+**Query Parameters:**
+
+- `cities` - Comma-separated list of city names (required, 2-5 cities)
+
+**Example:**
+```bash
+curl "http://localhost:8000/compare?cities=Des%20Moines,Ames,Iowa%20City"
+```
+
+**Response:**
+```json
+{
+  "cities": [...],
+  "winners": {
+    "overall": "Ames",
+    "safety": "Ames",
+    "housing": "Des Moines",
+    "education": "Iowa City",
+    "economic": "Des Moines"
+  }
+}
+```
+
+### Benchmark Endpoint
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/benchmarks` | Get Iowa and US benchmark data |
+
+**Query Parameters:**
+
+- `category` - Optional category filter (e.g., "housing", "education")
+
+**Example:**
+```bash
+curl "http://localhost:8000/benchmarks?category=housing"
+```
+
+### Export Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/export/csv` | Download all data as CSV |
+| GET | `/export/json` | Download all data as JSON |
+
+**Examples:**
+```bash
+# Download as JSON
+curl "http://localhost:8000/export/json" > iowa_cities.json
+
+# Download as CSV
+curl "http://localhost:8000/export/csv" > iowa_cities.csv
+```
+
+## Error Handling
+
+The API returns appropriate HTTP status codes:
+
+| Code | Description |
+|------|-------------|
+| 200 | Success |
+| 400 | Bad request (invalid parameters) |
+| 404 | Resource not found |
+| 429 | Rate limit exceeded |
+| 500 | Server error |
+
+**Error Response Format:**
+```json
+{
+  "error": "City not found",
+  "city": "InvalidCity"
+}
+```
+
+## Rate Limiting
+
+To prevent abuse, the API implements rate limiting:
+
+- **100 requests per minute** per IP address
+- Exceeded limits return `429 Too Many Requests`
+- Wait time is included in the response
+
+## Security Features
+
+- **CORS**: Enabled for all origins
+- **Input Sanitization**: All parameters are validated and sanitized
+- **Security Headers**: X-Frame-Options, CSP, XSS-Protection
+- **Request Logging**: All requests are logged for monitoring
+
+## Interactive Documentation
+
+When running locally, access Swagger UI at:
+
+- **Swagger UI**: `http://localhost:8000/__docs__/`
+- **OpenAPI Spec**: `http://localhost:8000/openapi.json`
+
+## R Client Example
+
+```r
+library(httr2)
+library(jsonlite)
+
+# Base URL
+base_url <- "http://localhost:8000"
+
+# Get top cities
+response <- request(base_url) |>
+  req_url_path_append("scores") |>
+  req_url_query(category = "overall", limit = 5) |>
+  req_perform() |>
+  resp_body_json()
+
+# Compare cities
+comparison <- request(base_url) |>
+  req_url_path_append("compare") |>
+  req_url_query(cities = "Des Moines,Ames,Iowa City") |>
+  req_perform() |>
+  resp_body_json()
+```
+
+## Python Client Example
+
+```python
+import requests
+
+base_url = "http://localhost:8000"
+
+# Get city details
+response = requests.get(f"{base_url}/cities/Des Moines")
+city_data = response.json()
+
+# Get rankings
+scores = requests.get(f"{base_url}/scores", params={
+    "category": "safety",
+    "limit": 10
+}).json()
+```

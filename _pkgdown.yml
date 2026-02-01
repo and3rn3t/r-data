@@ -7,9 +7,20 @@ template:
     primary: "#2c7fb8"
     secondary: "#7fcdbb"
 
+home:
+  title: Iowa Cities Data Analysis
+  description: >
+    Comprehensive R workspace for analyzing Iowa cities including
+    demographics, economics, housing, education, crime, and healthcare.
+  links:
+    - text: Interactive Dashboard
+      href: articles/shiny-guide.html
+    - text: REST API
+      href: articles/api-guide.html
+
 navbar:
   structure:
-    left: [intro, reference, articles]
+    left: [intro, reference, articles, news]
     right: [search, github]
   components:
     intro:
@@ -25,8 +36,16 @@ navbar:
           href: articles/data-analysis.html
         - text: Shiny Dashboard Guide
           href: articles/shiny-guide.html
+        - text: REST API Guide
+          href: articles/api-guide.html
         - text: Interactive Tools
           href: articles/interactive-tools.html
+        - text: "---"
+        - text: Data Dictionary
+          href: articles/data-dictionary.html
+    news:
+      text: Changelog
+      href: news/index.html
     github:
       icon: fab fa-github
       href: https://github.com/and3rn3t/r-data
@@ -66,8 +85,24 @@ reference:
     contents:
       - IOWA_CITIES
       - CITY_REGIONS
-      - COLORS
-      - SCORE_WEIGHTS
+      - IOWA_BENCHMARKS
+      - US_BENCHMARKS
+      - get_region
+      - get_benchmark
+      - compare_to_benchmark
+      - OVERALL_WEIGHTS
+
+  - title: Security
+    desc: Input validation and security functions
+    contents:
+      - sanitize_string
+      - validate_city_input
+      - validate_numeric_input
+      - validate_category
+      - create_rate_limiter
+      - check_rate_limit
+      - generate_session_token
+      - get_security_headers
 
 articles:
   - title: Getting Started
@@ -80,7 +115,14 @@ articles:
     contents:
       - data-analysis
       - shiny-guide
+      - api-guide
       - interactive-tools
+      - data-dictionary
+
+news:
+  releases:
+    - text: "Version 1.0.0"
+      href: news/index.html
 
 authors:
   Anderson:

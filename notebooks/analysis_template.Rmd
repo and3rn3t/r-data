@@ -1,0 +1,128 @@
+---
+title: "Data Analysis Report"
+author: "Your Name"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    number_sections: true
+    theme: flatly
+    highlight: tango
+    code_folding: hide
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+# Set chunk options
+knitr::opts_chunk$set(
+  echo = TRUE,           # Show code by default
+  warning = FALSE,       # Hide warnings
+  message = FALSE,       # Hide messages
+  fig.width = 10,        # Default figure width
+  fig.height = 6,        # Default figure height
+  fig.align = "center",  # Center figures
+  cache = FALSE          # Don't cache results
+)
+
+# Load required packages
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+library(here)
+
+# Source utility functions
+# source(here("scripts/utils.R"))
+```
+
+# Introduction
+
+Brief overview of the analysis objectives and data sources.
+
+## Objectives
+
+- Objective 1
+- Objective 2
+- Objective 3
+
+## Data Description
+
+Describe your data here.
+
+# Data Loading
+
+```{r load-data}
+# Load your data
+# data <- read_csv(here("data/processed/cleaned_data.csv"))
+
+# Display first few rows
+# head(data) %>%
+#   kable() %>%
+#   kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+```
+
+# Exploratory Data Analysis
+
+## Data Summary
+
+```{r data-summary}
+# Get summary statistics
+# summary(data)
+# skimr::skim(data)
+```
+
+## Visualizations
+
+```{r visualizations}
+# Create visualizations
+# ggplot(data, aes(x = variable)) +
+#   geom_histogram(bins = 30, fill = "steelblue") +
+#   theme_minimal() +
+#   labs(title = "Distribution of Variable")
+```
+
+# Statistical Analysis
+
+## Descriptive Statistics
+
+```{r descriptive-stats}
+# Calculate descriptive statistics
+# summary_table <- data %>%
+#   group_by(group_var) %>%
+#   summarise(
+#     n = n(),
+#     mean = mean(value_var, na.rm = TRUE),
+#     sd = sd(value_var, na.rm = TRUE)
+#   )
+# 
+# summary_table %>%
+#   kable(digits = 2) %>%
+#   kable_styling(bootstrap_options = c("striped", "hover"))
+```
+
+## Inferential Statistics
+
+```{r inferential-stats}
+# Perform statistical tests
+# model <- lm(outcome ~ predictor, data = data)
+# summary(model)
+```
+
+# Results
+
+Present your key findings here.
+
+# Discussion
+
+Interpret your results and discuss implications.
+
+# Conclusions
+
+Summarize main conclusions and potential next steps.
+
+# Session Information
+
+```{r session-info}
+sessionInfo()
+```

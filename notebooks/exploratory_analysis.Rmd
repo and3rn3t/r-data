@@ -1,0 +1,178 @@
+---
+title: "Exploratory Data Analysis"
+author: "Your Name"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    theme: cosmo
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.width = 10,
+  fig.height = 6
+)
+
+library(tidyverse)
+library(skimr)
+library(here)
+```
+
+# Overview
+
+This notebook provides a comprehensive exploratory data analysis (EDA) workflow.
+
+# Load Data
+
+```{r load-data}
+# Load your dataset
+# data <- read_csv(here("data/raw/your_file.csv"))
+```
+
+# Data Structure
+
+```{r structure}
+# Check data structure
+# glimpse(data)
+# str(data)
+```
+
+# Data Quality
+
+## Missing Values
+
+```{r missing-values}
+# Check for missing values
+# missing_summary <- data %>%
+#   summarise(across(everything(), ~sum(is.na(.)))) %>%
+#   pivot_longer(everything(), names_to = "variable", values_to = "missing_count") %>%
+#   mutate(missing_pct = round(missing_count / nrow(data) * 100, 2)) %>%
+#   arrange(desc(missing_count))
+# 
+# missing_summary
+
+# Visualize missing data
+# missing_summary %>%
+#   filter(missing_count > 0) %>%
+#   ggplot(aes(x = reorder(variable, missing_pct), y = missing_pct)) +
+#   geom_col(fill = "steelblue") +
+#   coord_flip() +
+#   labs(title = "Missing Data by Variable",
+#        x = "Variable",
+#        y = "% Missing")
+```
+
+## Duplicates
+
+```{r duplicates}
+# Check for duplicate rows
+# n_duplicates <- sum(duplicated(data))
+# cat("Number of duplicate rows:", n_duplicates)
+```
+
+# Univariate Analysis
+
+## Numeric Variables
+
+```{r numeric-summary}
+# Summary statistics for numeric variables
+# skim(data)
+```
+
+```{r numeric-distributions}
+# Visualize distributions of numeric variables
+# data %>%
+#   select(where(is.numeric)) %>%
+#   pivot_longer(everything(), names_to = "variable", values_to = "value") %>%
+#   ggplot(aes(x = value)) +
+#   geom_histogram(bins = 30, fill = "steelblue") +
+#   facet_wrap(~variable, scales = "free") +
+#   theme_minimal() +
+#   labs(title = "Distribution of Numeric Variables")
+```
+
+## Categorical Variables
+
+```{r categorical-summary}
+# Frequency tables for categorical variables
+# data %>%
+#   select(where(is.character)) %>%
+#   map(~table(.))
+```
+
+```{r categorical-plots}
+# Visualize categorical variables
+# data %>%
+#   select(where(is.character)) %>%
+#   pivot_longer(everything(), names_to = "variable", values_to = "value") %>%
+#   count(variable, value) %>%
+#   ggplot(aes(x = reorder(value, n), y = n)) +
+#   geom_col(fill = "steelblue") +
+#   facet_wrap(~variable, scales = "free") +
+#   coord_flip() +
+#   theme_minimal() +
+#   labs(title = "Frequency of Categorical Variables",
+#        x = "Category",
+#        y = "Count")
+```
+
+# Bivariate Analysis
+
+## Correlations
+
+```{r correlations}
+# Correlation matrix for numeric variables
+# cor_matrix <- data %>%
+#   select(where(is.numeric)) %>%
+#   cor(use = "complete.obs")
+# 
+# cor_matrix
+
+# Visualize correlation matrix
+# library(corrplot)
+# corrplot(cor_matrix, method = "color", type = "upper", 
+#          tl.col = "black", tl.srt = 45)
+```
+
+## Relationships
+
+```{r scatter-plots}
+# Scatter plots for key relationships
+# ggplot(data, aes(x = var1, y = var2)) +
+#   geom_point(alpha = 0.5, color = "steelblue") +
+#   geom_smooth(method = "lm", color = "red") +
+#   theme_minimal() +
+#   labs(title = "Relationship between Variables")
+```
+
+# Outlier Detection
+
+```{r outliers}
+# Identify outliers using box plots
+# data %>%
+#   select(where(is.numeric)) %>%
+#   pivot_longer(everything(), names_to = "variable", values_to = "value") %>%
+#   ggplot(aes(x = variable, y = value)) +
+#   geom_boxplot(fill = "steelblue") +
+#   coord_flip() +
+#   theme_minimal() +
+#   labs(title = "Outlier Detection")
+```
+
+# Key Findings
+
+Summarize the main insights from your EDA:
+
+1. Finding 1
+2. Finding 2
+3. Finding 3
+
+# Next Steps
+
+Based on the EDA, outline the next steps for analysis.

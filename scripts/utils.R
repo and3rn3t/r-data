@@ -428,4 +428,166 @@ format_elapsed <- function(start_time) {
   }
 }
 
+# =============================================================================
+# SCORING FUNCTIONS
+# =============================================================================
+
+#' Safe left join that removes duplicate columns
+#' 
+#' @param base Base data frame
+#' @param new Data frame to join
+#' @param by Column(s) to join by
+#' @return Joined data frame
+#' @examples
+#' safe_left_join(cities, housing, by = "city")
+safe_left_join <- function(base, new, by = "city") {
+  if (is.null(new) || nrow(new) == 0) return(base)
+  existing_cols <- intersect(names(new), names(base))
+  cols_to_remove <- setdiff(existing_cols, by)
+  if (length(cols_to_remove) > 0) {
+    new <- new %>% select(-all_of(cols_to_remove))
+  }
+  left_join(base, new, by = by)
+}
+
+#' Calculate city scores from loaded datasets
+#' 
+#' Centralized scoring function used by app.R and analysis scripts.
+#' Uses OVERALL_WEIGHTS from constants.R when available.
+#' 
+#' @param data List of data frames from load_datasets()
+#' @param weights Optional named list of weights (default uses OVERALL_WEIGHTS)
+#' @return Data frame with city scores and rankings
+#' @examples
+#' data <- load_datasets(RAW_DATA_FILES)
+#' scores <- calculate_city_scores(data)
+calculate_city_scores <- function(data, weights = NULL) {
+  # Default weights if not provided and OVERALL_WEIGHTS not available
+  default_weights <- list(
+    safety = 0.15,
+    housing = 0.15,
+    education = 0.15,
+    economic = 0.20,
+    healthcare = 0.15,
+    livability = 0.20
+  )
+  
+  # Try to use OVERALL_WEIGHTS from constants.R if available
+  if (is.null(weights)) {
+    weights <- if (exists("OVERALL_WEIGHTS")) OVERALL_WEIGHTS else default_weights
+  }
+  
+  # Build base scores dataframe
+  scores <- data$major_cities %>%
+    select(city, 
+           county = any_of("county"),
+           population = any_of(c("population_2020", "population")), 
+           latitude = any_of(c("latitude", "lat")), 
+           longitude = any_of(c("longitude", "lon", "lng")), 
+           region = any_of("region"))
+  
+  # Safely join each dataset
+  if (!is.null(data$crime)) {
+    scores <- safe_left_join(scores, 
+      data$crime %>% select(city, any_of(c("violent_crime_rate", "property_crime_rate"))),
+      by = "city")
+  }
+  
+  if (!is.null(data$housing)) {
+    scores <- safe_left_join(scores,
+      data$housing %>% select(city, any_of(c("median_home_value", "owner_occupied_pct", "median_rent"))),
+      by = "city")
+  }
+  
+  if (!is.null(data$education)) {
+    scores <- safe_left_join(scores,
+      data$education %>% select(city, any_of(c("graduation_rate", "college_readiness_pct", "pct_bachelors"))),
+      by = "city")
+  }
+  
+  if (!is.null(data$economic)) {
+    scores <- safe_left_join(scores,
+      data$economic %>% select(city, any_of(c("median_household_income", "unemployment_rate", "poverty_rate"))),
+      by = "city")
+  }
+  
+  if (!is.null(data$healthcare)) {
+    scores <- safe_left_join(scores,
+      data$healthcare %>% select(city, any_of(c("life_expectancy", "health_insurance_coverage_pct"))),
+      by = "city")
+  }
+  
+  if (!is.null(data$amenities)) {
+    scores <- safe_left_join(scores,
+      data$amenities %>% select(city, any_of(c("livability_score", "cost_of_living_index"))),
+      by = "city")
+  }
+  
+  # Calculate component scores
+  scores <- scores %>%
+    mutate(
+      # Safety score (lower crime = higher score)
+      safety_score = case_when(
+        !is.null(data$crime) & "violent_crime_rate" %in% names(.) & "property_crime_rate" %in% names(.) ~
+          (normalize(violent_crime_rate, TRUE) + normalize(property_crime_rate, TRUE)) / 2,
+        !is.null(data$crime) & "violent_crime_rate" %in% names(.) ~
+          normalize(violent_crime_rate, TRUE),
+        TRUE ~ 50
+      ),
+      
+      # Housing score
+      housing_score = case_when(
+        "median_home_value" %in% names(.) & "owner_occupied_pct" %in% names(.) ~
+          (normalize(median_home_value, TRUE) + normalize(owner_occupied_pct)) / 2,
+        "median_home_value" %in% names(.) ~
+          normalize(median_home_value, TRUE),
+        TRUE ~ 50
+      ),
+      
+      # Education score
+      education_score = case_when(
+        "graduation_rate" %in% names(.) & "pct_bachelors" %in% names(.) ~
+          (normalize(graduation_rate) + normalize(pct_bachelors)) / 2,
+        "graduation_rate" %in% names(.) ~
+          normalize(graduation_rate),
+        TRUE ~ 50
+      ),
+      
+      # Economic score
+      economic_score = case_when(
+        "median_household_income" %in% names(.) & "unemployment_rate" %in% names(.) ~
+          (normalize(median_household_income) + normalize(unemployment_rate, TRUE)) / 2,
+        "median_household_income" %in% names(.) ~
+          normalize(median_household_income),
+        TRUE ~ 50
+      ),
+      
+      # Healthcare score
+      healthcare_score = case_when(
+        "life_expectancy" %in% names(.) & "health_insurance_coverage_pct" %in% names(.) ~
+          (normalize(life_expectancy) + normalize(health_insurance_coverage_pct)) / 2,
+        "life_expectancy" %in% names(.) ~
+          normalize(life_expectancy),
+        TRUE ~ 50
+      ),
+      
+      # Livability score
+      livability_score_calc = if ("livability_score" %in% names(.)) normalize(livability_score) else 50,
+      
+      # Overall weighted score
+      overall_score = (
+        safety_score * (weights$safety %||% 0.15) +
+        housing_score * (weights$housing %||% 0.15) +
+        education_score * (weights$education %||% 0.15) +
+        economic_score * (weights$economic %||% 0.20) +
+        healthcare_score * (weights$healthcare %||% 0.15) +
+        livability_score_calc * (weights$livability %||% weights$amenities %||% 0.20)
+      ) / sum(unlist(weights[c("safety", "housing", "education", "economic", "healthcare", "livability", "amenities")]), na.rm = TRUE) * 100
+    ) %>%
+    arrange(desc(overall_score)) %>%
+    mutate(rank = row_number())
+  
+  return(scores)
+}
+
 cat("✓ Utility functions loaded successfully.\n")

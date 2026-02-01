@@ -12,11 +12,18 @@ default:
     processed_dir: "data/processed"
     external_dir: "data/external"
   
+  # Cache settings
+  cache:
+    enabled: true
+    directory: "data/cache"
+    timeout_hours: 24
+    
   # Output settings
   outputs:
     figures_dir: "outputs/figures"
     tables_dir: "outputs/tables"
     reports_dir: "outputs/reports"
+    logs_dir: "outputs/logs"
     figure_width: 10
     figure_height: 6
     figure_dpi: 300
@@ -32,6 +39,8 @@ development:
   analysis:
     verbose: TRUE
     save_intermediates: TRUE
+  cache:
+    timeout_hours: 1  # Shorter cache for development
 
 production:
   inherits: default
@@ -40,3 +49,5 @@ production:
     save_intermediates: FALSE
   outputs:
     figure_dpi: 600
+  cache:
+    timeout_hours: 48  # Longer cache for production

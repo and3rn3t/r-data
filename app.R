@@ -21,22 +21,9 @@ source(here("scripts/security.R"))  # Security module
 # =============================================================================
 
 # Use centralized data loading from utils.R
-# Define file mapping for all Iowa datasets
-IOWA_DATA_FILES <- c(
-  crime = "iowa_crime_data.csv",
-  housing = "iowa_housing_data.csv",
-  education = "iowa_education_data.csv",
-  economic = "iowa_economic_data.csv",
-  healthcare = "iowa_healthcare_data.csv",
-  demographics = "iowa_demographics_data.csv",
-  environment = "iowa_environment_data.csv",
-  amenities = "iowa_amenities_data.csv",
-  historical = "iowa_historical_data.csv",
-  major_cities = "iowa_major_cities.csv"
-)
-
+# Use RAW_DATA_FILES from constants.R instead of duplicating
 load_all_data <- function() {
-  load_datasets(IOWA_DATA_FILES)
+  load_datasets(RAW_DATA_FILES)
 }
 
 # Try to load cached data first, fall back to computing
@@ -67,37 +54,20 @@ load_cached_or_compute <- function() {
   return(list(scores = scores, data = data))
 }
 
-data <- load_all_data()
-cities <- sort(unique(data$major_cities$city))
+# Try cached data first for faster startup
+cached_result <- load_cached_or_compute()
+data <- cached_result$data
+scores <- cached_result$scores
 
-# normalize() function is now loaded from utils.R
-
-# Calculate scores for all cities
-calculate_scores <- function(data) {
-  scores <- data$major_cities %>%
-    select(city, county, population = population_2020, latitude, longitude, region) %>%
-    left_join(data$crime %>% select(city, violent_crime_rate, property_crime_rate), by = "city") %>%
-    left_join(data$housing %>% select(city, median_home_value, owner_occupied_pct), by = "city") %>%
-    left_join(data$education %>% select(city, graduation_rate, college_readiness_pct, pct_bachelors), by = "city") %>%
-    left_join(data$economic %>% select(city, median_household_income, unemployment_rate, poverty_rate), by = "city") %>%
-    left_join(data$healthcare %>% select(city, life_expectancy, health_insurance_coverage_pct), by = "city") %>%
-    left_join(data$amenities %>% select(city, livability_score, cost_of_living_index), by = "city") %>%
-    mutate(
-      safety_score = (normalize(violent_crime_rate, TRUE) + normalize(property_crime_rate, TRUE)) / 2,
-      housing_score = (normalize(median_home_value, TRUE) + normalize(owner_occupied_pct)) / 2,
-      education_score = (normalize(graduation_rate) + normalize(college_readiness_pct) + normalize(pct_bachelors)) / 3,
-      economic_score = (normalize(median_household_income) + normalize(unemployment_rate, TRUE) + normalize(poverty_rate, TRUE)) / 3,
-      healthcare_score = (normalize(life_expectancy) + normalize(health_insurance_coverage_pct)) / 2,
-      livability_score_calc = normalize(livability_score),
-      overall_score = (safety_score + housing_score + education_score + economic_score + healthcare_score + livability_score_calc) / 6
-    ) %>%
-    arrange(desc(overall_score)) %>%
-    mutate(rank = row_number())
-  
-  return(scores)
+# If cache had scores, use them; otherwise calculate
+if (is.null(scores)) {
+  scores <- calculate_city_scores(data)  # Use centralized function from utils.R
 }
 
-scores <- calculate_scores(data)
+cities <- sort(unique(data$major_cities$city))
+
+# Local alias for backward compatibility with any code using calculate_scores
+calculate_scores <- calculate_city_scores
 
 # =============================================================================
 # UI
@@ -666,7 +636,7 @@ server <- function(input, output, session) {
              yaxis = list(title = "Overall Score"),
              showlegend = FALSE)
     p
-  })
+  }) %>% bindCache("overview_chart_static")
   
   # Score Distribution
   output$score_distribution <- renderPlotly({
@@ -716,7 +686,7 @@ server <- function(input, output, session) {
       ) %>%
       {if (nrow(radar_data) > 2) add_trace(., r = as.numeric(radar_data[3, 2:7]), theta = categories, name = radar_data$city[3]) else .} %>%
       layout(polar = list(radialaxis = list(visible = TRUE, range = c(0, 100))))
-  })
+  }) %>% bindCache(input$city1, input$city2, input$city3)
   
   # Comparison Table
   output$comparison_table <- renderDT({
@@ -878,7 +848,7 @@ server <- function(input, output, session) {
         lonaxis = list(range = c(-97, -90)),
         lataxis = list(range = c(40, 44))
       ))
-  })
+  }) %>% bindCache(input$map_metric)
   
   # Recommendations
   recommendations <- eventReactive(input$get_recommendations, {

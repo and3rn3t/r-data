@@ -48,6 +48,16 @@ po/*~
 # RStudio Connect folder
 rsconnect/
 
+# Analysis logs (keep structure with .gitkeep)
+outputs/logs/*.log
+
+# Cache files
+data/cache/*.rds
+
+# Analysis state files
+outputs/.analysis_state.rds
+outputs/.data_checksums.rds
+
 # targets pipeline
 _targets/
 

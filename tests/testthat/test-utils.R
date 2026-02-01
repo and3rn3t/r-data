@@ -298,3 +298,148 @@ test_that("format_elapsed formats minutes correctly", {
   
   expect_true(grepl("minutes", result))
 })
+
+# =============================================================================
+# NEW TESTS: safe_left_join function
+# =============================================================================
+
+test_that("safe_left_join handles null input", {
+  base <- data.frame(city = c("A", "B"), pop = c(100, 200))
+  
+  result <- safe_left_join(base, NULL, by = "city")
+  
+  expect_equal(result, base)
+})
+
+test_that("safe_left_join removes duplicate columns", {
+  base <- data.frame(city = c("A", "B"), pop = c(100, 200))
+  new_data <- data.frame(city = c("A", "B"), pop = c(999, 999), score = c(50, 60))
+  
+  result <- safe_left_join(base, new_data, by = "city")
+  
+  expect_equal(result$pop, c(100, 200))  # Keep original
+  expect_true("score" %in% names(result))
+})
+
+test_that("safe_left_join handles empty data frame", {
+  base <- data.frame(city = c("A", "B"), pop = c(100, 200))
+  empty <- data.frame(city = character(0), score = numeric(0))
+  
+  result <- safe_left_join(base, empty, by = "city")
+  
+  expect_equal(nrow(result), 2)
+})
+
+# =============================================================================
+# NEW TESTS: safe_read_csv function
+# =============================================================================
+
+test_that("safe_read_csv returns NULL for missing file", {
+  result <- safe_read_csv("nonexistent_file_12345.csv")
+  
+  expect_null(result)
+})
+
+test_that("safe_read_csv uses fallback path", {
+  # This test requires an existing file - skip if not in project
+  skip_if_not(file.exists(here::here("data/raw/iowa_major_cities.csv")))
+  
+  result <- safe_read_csv("missing.csv", here::here("data/raw/iowa_major_cities.csv"))
+  
+  expect_s3_class(result, "data.frame")
+  expect_true(nrow(result) > 0)
+})
+
+test_that("safe_read_csv stops on required missing file", {
+  expect_error(
+    safe_read_csv("nonexistent.csv", required = TRUE),
+    "Required file not found"
+  )
+})
+
+# =============================================================================
+# NEW TESTS: weighted_score function
+# =============================================================================
+
+test_that("weighted_score calculates correctly with equal weights", {
+  df <- data.frame(a = c(0, 100), b = c(100, 0))
+  
+  result <- weighted_score(a = 0.5, b = 0.5, data = df)
+  
+  expect_equal(result, c(50, 50))
+})
+
+test_that("weighted_score warns when weights don't sum to 1", {
+  df <- data.frame(a = c(50, 100), b = c(100, 50))
+  
+  expect_warning(
+    weighted_score(a = 0.3, b = 0.3, data = df),
+    "Weights do not sum to 1"
+  )
+})
+
+# =============================================================================
+# NEW TESTS: calculate_city_scores function
+# =============================================================================
+
+test_that("calculate_city_scores returns expected structure", {
+  # Create minimal mock data
+  mock_data <- list(
+    major_cities = data.frame(
+      city = c("CityA", "CityB"),
+      county = c("CountyA", "CountyB"),
+      population_2020 = c(50000, 100000),
+      latitude = c(41.5, 42.0),
+      longitude = c(-93.5, -94.0),
+      region = c("Central", "Eastern")
+    ),
+    crime = data.frame(
+      city = c("CityA", "CityB"),
+      violent_crime_rate = c(200, 400),
+      property_crime_rate = c(1000, 2000)
+    ),
+    housing = data.frame(
+      city = c("CityA", "CityB"),
+      median_home_value = c(150000, 200000),
+      owner_occupied_pct = c(65, 70)
+    ),
+    education = NULL,
+    economic = NULL,
+    healthcare = NULL,
+    amenities = NULL
+  )
+  
+  result <- calculate_city_scores(mock_data)
+  
+  expect_s3_class(result, "data.frame")
+  expect_true("overall_score" %in% names(result))
+  expect_true("safety_score" %in% names(result))
+  expect_true("rank" %in% names(result))
+  expect_equal(nrow(result), 2)
+})
+
+test_that("calculate_city_scores ranks correctly", {
+  mock_data <- list(
+    major_cities = data.frame(
+      city = c("HighScore", "LowScore"),
+      population_2020 = c(50000, 50000),
+      latitude = c(41.5, 42.0),
+      longitude = c(-93.5, -94.0)
+    ),
+    crime = data.frame(
+      city = c("HighScore", "LowScore"),
+      violent_crime_rate = c(50, 500),   # Lower is better
+      property_crime_rate = c(100, 1000)
+    ),
+    housing = NULL,
+    education = NULL,
+    economic = NULL,
+    healthcare = NULL,
+    amenities = NULL
+  )
+  
+  result <- calculate_city_scores(mock_data)
+  
+  # HighScore should rank 1 (lower crime = higher score)
+  expect_equal(result$city[result$rank == 1], "HighScore")
+})

@@ -8,6 +8,9 @@ library(htmlwidgets)
 library(here)
 library(RColorBrewer)
 
+source(here("scripts/utils.R"))
+source(here("scripts/constants.R"))
+
 cat("
 ╔═══════════════════════════════════════════════════════════════╗
 ║              IOWA CITIES MAP VISUALIZATIONS                   ║

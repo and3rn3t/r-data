@@ -6,6 +6,9 @@ library(tidyverse)
 library(here)
 library(fmsb)
 
+source(here("scripts/utils.R"))
+source(here("scripts/constants.R"))
+
 cat("
 ╔═══════════════════════════════════════════════════════════════╗
 ║              IOWA CITY COMPARISON TOOL                        ║

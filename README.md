@@ -37,6 +37,12 @@ A complete, ready-to-use workspace for data analysis with R. This repository pro
 - **Recommendation Engine**: Find your perfect city based on priorities
 - **Predictive Analysis**: Population and home value projections to 2030
 - **Automated Reports**: PDF report generation for any city
+- **Dark Mode**: Toggle dark theme for comfortable viewing
+- **Keyboard Navigation**: Quick shortcuts (1-7 for tabs, D for dark mode, ? for help)
+- **Accessibility**: ARIA labels, focus indicators, skip links, high contrast support
+- **Mobile Responsive**: Works on tablets and phones
+- **Docker Support**: Containerized deployment ready
+- **Comprehensive Testing**: 285+ unit tests with testthat
 
 ## 📁 Directory Structure
 
@@ -246,6 +252,26 @@ clean_data <- standardize_names(my_data)
 - [RStudio Cheatsheets](https://posit.co/resources/cheatsheets/) - Quick references
 - [Tidyverse Documentation](https://www.tidyverse.org/) - Package guides
 - [Shiny Documentation](https://shiny.posit.co/) - Dashboard development
+
+## 🐳 Docker Deployment
+
+Run the dashboard in a container:
+
+```bash
+# Build and run with Docker Compose
+docker-compose up iowa-dashboard
+
+# Or build manually
+docker build -t iowa-dashboard .
+docker run -p 3838:3838 iowa-dashboard
+```
+
+Access the dashboard at http://localhost:3838
+
+For development with live reload:
+```bash
+docker-compose up iowa-dashboard-dev
+```
 
 ## 🤝 Contributing
 

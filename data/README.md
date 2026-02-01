@@ -56,6 +56,64 @@ Generated outputs in `processed/`:
 
 ## Data Schema
 
+### iowa_major_cities.csv
+| Column | Type | Description |
+|--------|------|-------------|
+| city | character | City name (primary key) |
+| county | character | County name |
+| population_2020 | integer | 2020 Census population |
+| latitude | numeric | Latitude coordinate |
+| longitude | numeric | Longitude coordinate |
+| region | character | Iowa region (Central, Eastern, Western, Northern) |
+
+### iowa_crime_data.csv
+| Column | Type | Description |
+|--------|------|-------------|
+| city | character | City name |
+| violent_crime_rate | numeric | Violent crimes per 100,000 |
+| property_crime_rate | numeric | Property crimes per 100,000 |
+| total_crime_rate | numeric | Total crimes per 100,000 |
+| clearance_rate | numeric | Percentage of crimes solved |
+
+### iowa_housing_data.csv
+| Column | Type | Description |
+|--------|------|-------------|
+| city | character | City name |
+| median_home_value | numeric | Median home value ($) |
+| median_rent | numeric | Median monthly rent ($) |
+| owner_occupied_pct | numeric | % owner-occupied units |
+| vacancy_rate | numeric | Housing vacancy rate |
+| housing_units | integer | Total housing units |
+
+### iowa_education_data.csv
+| Column | Type | Description |
+|--------|------|-------------|
+| city | character | City name |
+| graduation_rate | numeric | High school graduation rate (%) |
+| college_readiness_pct | numeric | College readiness score (%) |
+| pct_bachelors | numeric | % with bachelor's degree |
+| student_teacher_ratio | numeric | Students per teacher |
+| school_spending_per_pupil | numeric | Spending per student ($) |
+
+### iowa_economic_data.csv
+| Column | Type | Description |
+|--------|------|-------------|
+| city | character | City name |
+| median_household_income | numeric | Median household income ($) |
+| unemployment_rate | numeric | Unemployment rate (%) |
+| poverty_rate | numeric | Poverty rate (%) |
+| labor_force_participation | numeric | Labor force participation (%) |
+| job_growth_rate | numeric | Annual job growth (%) |
+
+### iowa_healthcare_data.csv
+| Column | Type | Description |
+|--------|------|-------------|
+| city | character | City name |
+| life_expectancy | numeric | Life expectancy (years) |
+| health_insurance_coverage_pct | numeric | % with health insurance |
+| physicians_per_10000 | numeric | Physicians per 10,000 residents |
+| hospital_beds_per_1000 | numeric | Hospital beds per 1,000 |
+
 For complete column definitions, see: [../docs/DATA_DICTIONARY.md](../docs/DATA_DICTIONARY.md)
 
 ### Key Join Column

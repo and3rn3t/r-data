@@ -4,10 +4,16 @@
 
 library(shiny)
 library(shinydashboard)
+library(shinyjs)  # For JavaScript interactions
 library(tidyverse)
 library(plotly)
 library(DT)
 library(here)
+library(shinycssloaders)  # For loading spinners
+
+# Load project utilities
+source(here("scripts/utils.R"))
+source(here("scripts/constants.R"))
 
 # =============================================================================
 # LOAD DATA
@@ -15,29 +21,51 @@ library(here)
 
 load_all_data <- function() {
   list(
-    crime = read_csv(here("data/raw/iowa_crime_data.csv"), show_col_types = FALSE),
-    housing = read_csv(here("data/raw/iowa_housing_data.csv"), show_col_types = FALSE),
-    education = read_csv(here("data/raw/iowa_education_data.csv"), show_col_types = FALSE),
-    economic = read_csv(here("data/raw/iowa_economic_data.csv"), show_col_types = FALSE),
-    healthcare = read_csv(here("data/raw/iowa_healthcare_data.csv"), show_col_types = FALSE),
-    demographics = read_csv(here("data/raw/iowa_demographics_data.csv"), show_col_types = FALSE),
-    environment = read_csv(here("data/raw/iowa_environment_data.csv"), show_col_types = FALSE),
-    amenities = read_csv(here("data/raw/iowa_amenities_data.csv"), show_col_types = FALSE),
-    historical = read_csv(here("data/raw/iowa_historical_data.csv"), show_col_types = FALSE),
-    major_cities = read_csv(here("data/raw/iowa_major_cities.csv"), show_col_types = FALSE)
+    crime = safe_read_csv(here("data/raw/iowa_crime_data.csv")),
+    housing = safe_read_csv(here("data/raw/iowa_housing_data.csv")),
+    education = safe_read_csv(here("data/raw/iowa_education_data.csv")),
+    economic = safe_read_csv(here("data/raw/iowa_economic_data.csv")),
+    healthcare = safe_read_csv(here("data/raw/iowa_healthcare_data.csv")),
+    demographics = safe_read_csv(here("data/raw/iowa_demographics_data.csv")),
+    environment = safe_read_csv(here("data/raw/iowa_environment_data.csv")),
+    amenities = safe_read_csv(here("data/raw/iowa_amenities_data.csv")),
+    historical = safe_read_csv(here("data/raw/iowa_historical_data.csv")),
+    major_cities = safe_read_csv(here("data/raw/iowa_major_cities.csv"))
   )
+}
+
+# Try to load cached data first, fall back to computing
+load_cached_or_compute <- function() {
+  cache_file <- here("data/cache/city_scores.rds")
+  
+  if (file.exists(cache_file)) {
+    cache_info <- tryCatch(
+      readRDS(here("data/cache/cache_info.rds")),
+      error = function(e) NULL
+    )
+    
+    # Check if cache is less than 24 hours old
+    if (!is.null(cache_info) && 
+        difftime(Sys.time(), cache_info$created, units = "hours") < 24) {
+      message("Loading cached city scores...")
+      return(list(
+        scores = readRDS(cache_file),
+        data = readRDS(here("data/cache/all_datasets.rds"))
+      ))
+    }
+  }
+  
+  # Fall back to computing
+  message("Computing city scores (run cache_city_data.R to speed up)...")
+  data <- load_all_data()
+  scores <- calculate_scores(data)
+  return(list(scores = scores, data = data))
 }
 
 data <- load_all_data()
 cities <- sort(unique(data$major_cities$city))
 
-# Helper function to normalize scores
-normalize <- function(x, reverse = FALSE) {
-  if (all(is.na(x))) return(x)
-  scaled <- (x - min(x, na.rm = TRUE)) / (max(x, na.rm = TRUE) - min(x, na.rm = TRUE)) * 100
-  if (reverse) scaled <- 100 - scaled
-  return(scaled)
-}
+# normalize() function is now loaded from utils.R
 
 # Calculate scores for all cities
 calculate_scores <- function(data) {
@@ -81,11 +109,273 @@ ui <- dashboardPage(
       menuItem("City Profiles", tabName = "profiles", icon = icon("city")),
       menuItem("Maps", tabName = "maps", icon = icon("map")),
       menuItem("Recommendations", tabName = "recommend", icon = icon("star")),
-      menuItem("Trends", tabName = "trends", icon = icon("chart-line"))
+      menuItem("Trends", tabName = "trends", icon = icon("chart-line")),
+      hr(),
+      div(style = "padding: 10px; color: #888; font-size: 11px;",
+          icon("database"), " Data: 2020 Census",
+          br(),
+          icon("clock"), " Updated: Jan 2026"
+      ),
+      div(style = "padding: 10px;",
+          downloadButton("download_all_data", "Export All Data", 
+                         style = "width: 100%; font-size: 12px;")
+      ),
+      hr(),
+      div(style = "padding: 10px;",
+          checkboxInput("dark_mode", "Dark Mode", value = FALSE)
+      )
     )
   ),
   
   dashboardBody(
+    useShinyjs(),  # Enable shinyjs
+    # Skip to content link for accessibility
+    tags$a(href = "#main-content", class = "skip-link", "Skip to main content"),
+    # Main content wrapper with ID for skip link
+    tags$div(id = "main-content",
+    # Custom CSS for dark mode
+    tags$head(
+      tags$style(HTML("
+        .dark-mode .content-wrapper,
+        .dark-mode .main-footer,
+        .dark-mode .box {
+          background-color: #1a1a2e !important;
+          color: #eee !important;
+        }
+        .dark-mode .box-header {
+          background-color: #16213e !important;
+        }
+        .dark-mode .sidebar-menu > li > a {
+          color: #ccc !important;
+        }
+        .dark-mode .dataTables_wrapper {
+          color: #eee !important;
+        }
+        .dark-mode table.dataTable tbody tr {
+          background-color: #1a1a2e !important;
+          color: #eee !important;
+        }
+        .dark-mode table.dataTable tbody tr:hover {
+          background-color: #16213e !important;
+        }
+        .dark-mode .form-control {
+          background-color: #0f3460 !important;
+          color: #eee !important;
+          border-color: #16213e !important;
+        }
+        .dark-mode .selectize-input {
+          background-color: #0f3460 !important;
+          color: #eee !important;
+        }
+        .keyboard-help {
+          position: fixed;
+          bottom: 20px;
+          right: 20px;
+          background: rgba(0,0,0,0.8);
+          color: white;
+          padding: 15px;
+          border-radius: 8px;
+          font-size: 12px;
+          z-index: 9999;
+          display: none;
+        }
+        .keyboard-help.show {
+          display: block;
+        }
+        kbd {
+          background: #333;
+          padding: 2px 6px;
+          border-radius: 3px;
+          border: 1px solid #555;
+        }
+        
+        /* =============================================
+           MOBILE RESPONSIVE STYLES
+           ============================================= */
+        
+        /* Mobile-first responsive design */
+        @media screen and (max-width: 768px) {
+          .content-wrapper {
+            margin-left: 0 !important;
+          }
+          .main-sidebar {
+            transform: translateX(-230px);
+            transition: transform 0.3s ease;
+          }
+          .sidebar-open .main-sidebar {
+            transform: translateX(0);
+          }
+          .box {
+            margin-bottom: 10px;
+          }
+          .value-box {
+            min-height: 80px;
+          }
+          .value-box .icon {
+            display: none;
+          }
+          .value-box-value {
+            font-size: 20px !important;
+          }
+          .value-box-subtitle {
+            font-size: 12px !important;
+          }
+          .dataTables_wrapper {
+            overflow-x: auto;
+          }
+          .keyboard-help {
+            display: none !important;
+          }
+          .plotly {
+            max-width: 100%;
+            overflow-x: auto;
+          }
+        }
+        
+        @media screen and (max-width: 480px) {
+          .box-header {
+            padding: 8px;
+          }
+          .box-title {
+            font-size: 14px;
+          }
+          .form-group {
+            margin-bottom: 10px;
+          }
+          .btn {
+            width: 100%;
+            margin-bottom: 5px;
+          }
+        }
+        
+        /* =============================================
+           ACCESSIBILITY IMPROVEMENTS
+           ============================================= */
+        
+        /* Focus indicators for keyboard navigation */
+        a:focus, button:focus, input:focus, select:focus, .btn:focus {
+          outline: 3px solid #3498db !important;
+          outline-offset: 2px !important;
+        }
+        
+        /* Skip to content link */
+        .skip-link {
+          position: absolute;
+          top: -40px;
+          left: 0;
+          background: #3498db;
+          color: white;
+          padding: 8px 16px;
+          z-index: 10000;
+          transition: top 0.3s;
+        }
+        .skip-link:focus {
+          top: 0;
+        }
+        
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+          .box {
+            border: 2px solid #000 !important;
+          }
+          .btn {
+            border: 2px solid #000 !important;
+          }
+        }
+        
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+          *, *::before, *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+          }
+        }
+        
+        /* Print styles */
+        @media print {
+          .main-sidebar, .main-header, .keyboard-help {
+            display: none !important;
+          }
+          .content-wrapper {
+            margin-left: 0 !important;
+          }
+          .box {
+            page-break-inside: avoid;
+          }
+        }
+      ")),
+      # Keyboard navigation and accessibility JavaScript
+      tags$script(HTML("
+        $(document).ready(function() {
+          // ===== ACCESSIBILITY ENHANCEMENTS =====
+          
+          // Add ARIA labels to navigation
+          $('.sidebar-menu').attr('role', 'navigation');
+          $('.sidebar-menu').attr('aria-label', 'Main navigation');
+          
+          // Add ARIA labels to value boxes
+          $('.small-box, .info-box').each(function() {
+            $(this).attr('role', 'status');
+            $(this).attr('aria-live', 'polite');
+          });
+          
+          // Add ARIA labels to interactive charts
+          $('.plotly').attr('role', 'img');
+          $('.plotly').attr('aria-label', 'Interactive chart');
+          
+          // Add ARIA labels to data tables
+          $('.dataTables_wrapper').attr('role', 'region');
+          $('.dataTables_wrapper').attr('aria-label', 'Data table');
+          
+          // Make sidebar toggle accessible
+          $('.sidebar-toggle').attr('aria-label', 'Toggle navigation');
+          $('.sidebar-toggle').attr('aria-expanded', 'true');
+          
+          // Update ARIA on sidebar toggle
+          $(document).on('click', '.sidebar-toggle', function() {
+            var expanded = !$('body').hasClass('sidebar-collapse');
+            $(this).attr('aria-expanded', expanded);
+          });
+          
+          // ===== KEYBOARD SHORTCUTS =====
+          $(document).on('keydown', function(e) {
+            // Ignore if in input field
+            if ($(e.target).is('input, textarea, select')) return;
+            
+            var tabs = ['overview', 'rankings', 'compare', 'profiles', 'maps', 'recommend', 'trends'];
+            
+            switch(e.key) {
+              case '1': case '2': case '3': case '4': case '5': case '6': case '7':
+                var idx = parseInt(e.key) - 1;
+                if (idx < tabs.length) {
+                  $('a[data-value=\"' + tabs[idx] + '\"]').click();
+                }
+                break;
+              case 'd':
+                if (!e.ctrlKey && !e.metaKey) {
+                  $('#dark_mode').click();
+                }
+                break;
+              case '?':
+                $('.keyboard-help').toggleClass('show');
+                break;
+              case 'Escape':
+                $('.keyboard-help').removeClass('show');
+                break;
+            }
+          });
+        });
+      "))
+    ),
+    # Keyboard help overlay
+    div(class = "keyboard-help",
+        tags$h4("Keyboard Shortcuts"),
+        tags$p(tags$kbd("1-7"), " Switch tabs"),
+        tags$p(tags$kbd("d"), " Toggle dark mode"),
+        tags$p(tags$kbd("?"), " Show/hide this help"),
+        tags$p(tags$kbd("Esc"), " Close help")
+    ),
     tabItems(
       # Overview Tab
       tabItem(tabName = "overview",
@@ -97,9 +387,9 @@ ui <- dashboardPage(
         ),
         fluidRow(
           box(title = "Overall City Scores", status = "primary", solidHeader = TRUE, width = 8,
-              plotlyOutput("overview_chart", height = 400)),
+              withSpinner(plotlyOutput("overview_chart", height = 400))),
           box(title = "Score Distribution", status = "info", solidHeader = TRUE, width = 4,
-              plotlyOutput("score_distribution", height = 400))
+              withSpinner(plotlyOutput("score_distribution", height = 400)))
         )
       ),
       
@@ -107,15 +397,18 @@ ui <- dashboardPage(
       tabItem(tabName = "rankings",
         fluidRow(
           box(title = "City Rankings by Category", status = "primary", solidHeader = TRUE, width = 12,
-              selectInput("ranking_category", "Select Category:",
-                          choices = c("Overall" = "overall_score",
-                                      "Safety" = "safety_score",
-                                      "Housing" = "housing_score",
-                                      "Education" = "education_score",
-                                      "Economy" = "economic_score",
-                                      "Healthcare" = "healthcare_score",
-                                      "Livability" = "livability_score_calc")),
-              DTOutput("rankings_table"))
+              fluidRow(
+                column(8, selectInput("ranking_category", "Select Category:",
+                            choices = c("Overall" = "overall_score",
+                                        "Safety" = "safety_score",
+                                        "Housing" = "housing_score",
+                                        "Education" = "education_score",
+                                        "Economy" = "economic_score",
+                                        "Healthcare" = "healthcare_score",
+                                        "Livability" = "livability_score_calc"))),
+                column(4, br(), downloadButton("download_rankings", "Download Rankings", class = "btn-info"))
+              ),
+              withSpinner(DTOutput("rankings_table")))
         )
       ),
       
@@ -131,9 +424,9 @@ ui <- dashboardPage(
         ),
         fluidRow(
           box(title = "Radar Comparison", status = "info", solidHeader = TRUE, width = 6,
-              plotlyOutput("radar_chart", height = 400)),
+              withSpinner(plotlyOutput("radar_chart", height = 400))),
           box(title = "Side-by-Side Metrics", status = "success", solidHeader = TRUE, width = 6,
-              DTOutput("comparison_table"))
+              withSpinner(DTOutput("comparison_table")))
         ),
         fluidRow(
           box(title = "Category Winners", status = "warning", solidHeader = TRUE, width = 12,
@@ -145,7 +438,13 @@ ui <- dashboardPage(
       tabItem(tabName = "profiles",
         fluidRow(
           box(title = "City Profile", status = "primary", solidHeader = TRUE, width = 12,
-              selectInput("profile_city", "Select City:", choices = cities, selected = "Des Moines"))
+              fluidRow(
+                column(8, selectInput("profile_city", "Select City:", choices = cities, selected = "Des Moines")),
+                column(4, 
+                       br(),
+                       downloadButton("download_report", "Download Report", class = "btn-success"),
+                       downloadButton("download_data", "Download Data (CSV)", class = "btn-info"))
+              ))
         ),
         fluidRow(
           valueBoxOutput("profile_rank", width = 3),
@@ -155,9 +454,9 @@ ui <- dashboardPage(
         ),
         fluidRow(
           box(title = "Score Breakdown", status = "info", solidHeader = TRUE, width = 6,
-              plotlyOutput("profile_scores", height = 300)),
+              withSpinner(plotlyOutput("profile_scores", height = 300))),
           box(title = "Key Statistics", status = "success", solidHeader = TRUE, width = 6,
-              DTOutput("profile_stats"))
+              withSpinner(DTOutput("profile_stats")))
         )
       ),
       
@@ -171,7 +470,7 @@ ui <- dashboardPage(
                                       "Median Income" = "median_household_income",
                                       "Safety Score" = "safety_score",
                                       "Education Score" = "education_score")),
-              plotlyOutput("city_map", height = 500))
+              withSpinner(plotlyOutput("city_map", height = 500)))
         )
       ),
       
@@ -188,7 +487,7 @@ ui <- dashboardPage(
               actionButton("get_recommendations", "Get Recommendations", class = "btn-primary")
           ),
           box(title = "Your Top 5 Cities", status = "success", solidHeader = TRUE, width = 8,
-              DTOutput("recommendations_table"),
+              withSpinner(DTOutput("recommendations_table")),
               br(),
               uiOutput("top_recommendation"))
         )
@@ -207,12 +506,13 @@ ui <- dashboardPage(
         ),
         fluidRow(
           box(title = "Trend Chart", status = "info", solidHeader = TRUE, width = 8,
-              plotlyOutput("trend_chart", height = 400)),
+              withSpinner(plotlyOutput("trend_chart", height = 400))),
           box(title = "Growth Summary", status = "success", solidHeader = TRUE, width = 4,
               uiOutput("trend_summary"))
         )
       )
     )
+    )  # Close main-content div
   )
 )
 
@@ -222,7 +522,79 @@ ui <- dashboardPage(
 
 server <- function(input, output, session) {
   
+  # -------------------------------------------------------------------------
+  # Session Logging
+  # -------------------------------------------------------------------------
+  
+  # Log session start
+  session_id <- paste0("session_", format(Sys.time(), "%Y%m%d_%H%M%S"), "_", sample(1000:9999, 1))
+  log_dir <- here("outputs/logs")
+  if (!dir.exists(log_dir)) dir.create(log_dir, recursive = TRUE)
+  log_file <- file.path(log_dir, paste0("usage_", format(Sys.Date(), "%Y%m%d"), ".log"))
+  
+  log_event <- function(event, details = "") {
+    tryCatch({
+      timestamp <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+      log_entry <- paste(timestamp, session_id, event, details, sep = " | ")
+      cat(log_entry, "\n", file = log_file, append = TRUE)
+    }, error = function(e) NULL)
+  }
+  
+  log_event("SESSION_START", paste0("User agent: ", session$request$HTTP_USER_AGENT %||% "Unknown"))
+  
+  # Log session end
+
+  session$onSessionEnded(function() {
+    log_event("SESSION_END", "")
+  })
+  
+  # -------------------------------------------------------------------------
+  # Theme Toggle (Dark Mode)
+  # -------------------------------------------------------------------------
+  
+  observeEvent(input$dark_mode, {
+    if (input$dark_mode) {
+      shinyjs::runjs("document.body.classList.add('dark-mode');")
+      log_event("THEME_CHANGE", "dark")
+    } else {
+      shinyjs::runjs("document.body.classList.remove('dark-mode');")
+      log_event("THEME_CHANGE", "light")
+    }
+  })
+  
+  # -------------------------------------------------------------------------
+  # Input Validation Helpers
+  # -------------------------------------------------------------------------
+  
+  validate_city <- function(city) {
+    if (is.null(city) || city == "" || !city %in% cities) {
+      return(FALSE)
+    }
+    TRUE
+  }
+  
+  safe_filter_city <- function(data, city_name) {
+    if (!validate_city(city_name)) return(data[0, ])
+    filter(data, city == city_name)
+  }
+  
+  # -------------------------------------------------------------------------
+  # Error Handling Wrapper
+  # -------------------------------------------------------------------------
+  
+  safe_render <- function(expr, default = NULL, error_msg = "Error loading data") {
+    tryCatch(
+      expr,
+      error = function(e) {
+        message("Shiny error: ", e$message)
+        default
+      }
+    )
+  }
+  
+  # -------------------------------------------------------------------------
   # Overview Value Boxes
+  # -------------------------------------------------------------------------
   output$total_cities <- renderValueBox({
     valueBox(nrow(scores), "Cities Analyzed", icon = icon("city"), color = "blue")
   })
@@ -390,24 +762,58 @@ server <- function(input, output, session) {
       layout(yaxis = list(range = c(0, 100)))
   })
   
-  # Profile Stats Table
+  # Profile Stats Table with Benchmark Comparisons
   output$profile_stats <- renderDT({
     city <- input$profile_city
+    city_scores <- scores %>% filter(city == !!city)
+    
+    # Get city values
+    pop <- city_scores$population
+    home_val <- city_scores$median_home_value
+    grad_rate <- city_scores$graduation_rate
+    unemp <- city_scores$unemployment_rate
+    life_exp <- city_scores$life_expectancy
+    crime <- city_scores$violent_crime_rate
     
     stats <- tibble(
       Metric = c("Population", "Median Home Value", "Graduation Rate", 
                  "Unemployment Rate", "Life Expectancy", "Violent Crime Rate"),
       Value = c(
-        format(scores$population[scores$city == city], big.mark = ","),
-        paste0("$", format(scores$median_home_value[scores$city == city], big.mark = ",")),
-        paste0(scores$graduation_rate[scores$city == city], "%"),
-        paste0(scores$unemployment_rate[scores$city == city], "%"),
-        paste0(scores$life_expectancy[scores$city == city], " years"),
-        scores$violent_crime_rate[scores$city == city]
+        format(pop, big.mark = ","),
+        paste0("$", format(home_val, big.mark = ",")),
+        paste0(grad_rate, "%"),
+        paste0(unemp, "%"),
+        paste0(life_exp, " years"),
+        round(crime, 1)
+      ),
+      `Iowa Avg` = c(
+        "—",
+        paste0("$", format(IOWA_BENCHMARKS$median_home_value, big.mark = ",")),
+        paste0(IOWA_BENCHMARKS$high_school_graduation_rate, "%"),
+        paste0(IOWA_BENCHMARKS$unemployment_rate, "%"),
+        paste0(IOWA_BENCHMARKS$life_expectancy, " yrs"),
+        round(IOWA_BENCHMARKS$violent_crime_rate / 100, 1)  # Convert per 100k to per 1k
+      ),
+      `vs Iowa` = c(
+        "—",
+        ifelse(home_val < IOWA_BENCHMARKS$median_home_value, "↓ Below", 
+               ifelse(home_val > IOWA_BENCHMARKS$median_home_value * 1.1, "↑ Above", "≈ Similar")),
+        ifelse(grad_rate > IOWA_BENCHMARKS$high_school_graduation_rate, "↑ Better", 
+               ifelse(grad_rate < IOWA_BENCHMARKS$high_school_graduation_rate * 0.95, "↓ Lower", "≈ Similar")),
+        ifelse(unemp < IOWA_BENCHMARKS$unemployment_rate, "↑ Better", 
+               ifelse(unemp > IOWA_BENCHMARKS$unemployment_rate * 1.1, "↓ Higher", "≈ Similar")),
+        ifelse(life_exp > IOWA_BENCHMARKS$life_expectancy, "↑ Better", 
+               ifelse(life_exp < IOWA_BENCHMARKS$life_expectancy - 1, "↓ Lower", "≈ Similar")),
+        ifelse(crime < IOWA_BENCHMARKS$violent_crime_rate / 100, "↑ Safer", 
+               ifelse(crime > IOWA_BENCHMARKS$violent_crime_rate / 100 * 1.2, "↓ Higher", "≈ Similar"))
       )
     )
     
-    datatable(stats, options = list(dom = 't', pageLength = 10))
+    datatable(stats, options = list(dom = 't', pageLength = 10),
+              rownames = FALSE) %>%
+      formatStyle('vs Iowa',
+                  color = styleEqual(c('↑ Better', '↑ Safer', '↑ Above', '↓ Below', '↓ Lower', '↓ Higher', '≈ Similar'),
+                                     c('green', 'green', 'orange', 'green', 'red', 'red', 'gray')))
   })
   
   # City Map
@@ -433,6 +839,14 @@ server <- function(input, output, session) {
   
   # Recommendations
   recommendations <- eventReactive(input$get_recommendations, {
+    # Log recommendation request
+    log_event("RECOMMENDATION_REQUEST", paste0(
+      "Weights: safety=", input$weight_safety, 
+      " edu=", input$weight_education,
+      " econ=", input$weight_economy,
+      " housing=", input$weight_housing
+    ))
+    
     weights <- c(
       safety = input$weight_safety,
       education = input$weight_education,
@@ -454,7 +868,9 @@ server <- function(input, output, session) {
       ) %>%
       arrange(desc(custom_score)) %>%
       head(5)
-  })
+  }) %>%
+    bindCache(input$weight_safety, input$weight_education, input$weight_economy,
+              input$weight_housing, input$weight_healthcare, input$weight_livability)
   
   output$recommendations_table <- renderDT({
     req(input$get_recommendations)
@@ -526,6 +942,191 @@ server <- function(input, output, session) {
       )
     )
   })
+  
+  # ===========================================================================
+  # DOWNLOAD HANDLERS
+  # ===========================================================================
+  
+  # Get city profile data as reactive
+  city_profile_data <- reactive({
+    city <- validate_city(input$profile_city, names(cities))
+    
+    # Log city profile view
+    log_event("PROFILE_VIEW", paste0("City: ", city))
+    
+    # Compile all city data
+    crime <- safe_filter_city(data$crime, city)
+    housing <- safe_filter_city(data$housing, city)
+    education <- safe_filter_city(data$education, city)
+    cities_data <- safe_filter_city(data$cities, city)
+    
+    if (is.null(crime) || is.null(housing) || is.null(education) || is.null(cities_data)) {
+      return(NULL)
+    }
+    
+    list(
+      city = city,
+      crime = crime,
+      housing = housing,
+      education = education,
+      cities = cities_data
+    )
+  })
+  
+  # Download CSV data
+  output$download_data <- downloadHandler(
+    filename = function() {
+      city <- input$profile_city
+      log_event("DOWNLOAD_CSV", paste0("City: ", city))
+      paste0(gsub(" ", "_", tolower(city)), "_profile_", Sys.Date(), ".csv")
+    },
+    content = function(file) {
+      profile <- city_profile_data()
+      if (is.null(profile)) {
+        write_csv(tibble(error = "No data available"), file)
+        return()
+      }
+      
+      # Create summary data frame
+      summary_df <- tibble(
+        City = profile$city,
+        Population = profile$cities$population,
+        Region = profile$cities$region,
+        Median_Income = profile$cities$median_household_income,
+        Median_Home_Value = profile$housing$median_home_value,
+        Median_Rent = profile$housing$median_rent,
+        Violent_Crime_Rate = profile$crime$violent_crime_rate,
+        Property_Crime_Rate = profile$crime$property_crime_rate,
+        HS_Graduation_Rate = profile$education$high_school_graduation_rate,
+        Bachelors_Degree_Pct = profile$education$pct_bachelors_degree,
+        Student_Teacher_Ratio = profile$education$student_teacher_ratio
+      )
+      
+      write_csv(summary_df, file)
+    }
+  )
+  
+  # Download HTML report
+  output$download_report <- downloadHandler(
+    filename = function() {
+      city <- input$profile_city
+      log_event("DOWNLOAD_REPORT", paste0("City: ", city))
+      paste0(gsub(" ", "_", tolower(city)), "_report_", Sys.Date(), ".html")
+    },
+    content = function(file) {
+      profile <- city_profile_data()
+      if (is.null(profile)) {
+        writeLines("<h1>Error: No data available</h1>", file)
+        return()
+      }
+      
+      # Generate simple HTML report
+      html_content <- paste0(
+        "<!DOCTYPE html>",
+        "<html><head><style>",
+        "body { font-family: Arial, sans-serif; margin: 40px; }",
+        "h1 { color: #2c3e50; }",
+        "h2 { color: #3498db; border-bottom: 2px solid #3498db; padding-bottom: 5px; }",
+        "table { border-collapse: collapse; width: 100%; margin: 20px 0; }",
+        "th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }",
+        "th { background-color: #3498db; color: white; }",
+        "tr:nth-child(even) { background-color: #f2f2f2; }",
+        ".metric { font-size: 1.2em; color: #27ae60; font-weight: bold; }",
+        "</style></head><body>",
+        "<h1>", profile$city, " City Profile Report</h1>",
+        "<p>Generated: ", format(Sys.Date(), "%B %d, %Y"), "</p>",
+        
+        "<h2>Demographics</h2>",
+        "<table>",
+        "<tr><th>Metric</th><th>Value</th></tr>",
+        "<tr><td>Population</td><td class='metric'>", format(profile$cities$population, big.mark = ","), "</td></tr>",
+        "<tr><td>Region</td><td>", profile$cities$region, "</td></tr>",
+        "<tr><td>Median Household Income</td><td class='metric'>$", format(profile$cities$median_household_income, big.mark = ","), "</td></tr>",
+        "</table>",
+        
+        "<h2>Housing</h2>",
+        "<table>",
+        "<tr><th>Metric</th><th>Value</th></tr>",
+        "<tr><td>Median Home Value</td><td class='metric'>$", format(profile$housing$median_home_value, big.mark = ","), "</td></tr>",
+        "<tr><td>Median Rent</td><td class='metric'>$", format(profile$housing$median_rent, big.mark = ","), "</td></tr>",
+        "</table>",
+        
+        "<h2>Safety</h2>",
+        "<table>",
+        "<tr><th>Metric</th><th>Value</th></tr>",
+        "<tr><td>Violent Crime Rate (per 1,000)</td><td>", round(profile$crime$violent_crime_rate, 2), "</td></tr>",
+        "<tr><td>Property Crime Rate (per 1,000)</td><td>", round(profile$crime$property_crime_rate, 2), "</td></tr>",
+        "</table>",
+        
+        "<h2>Education</h2>",
+        "<table>",
+        "<tr><th>Metric</th><th>Value</th></tr>",
+        "<tr><td>High School Graduation Rate</td><td>", round(profile$education$high_school_graduation_rate, 1), "%</td></tr>",
+        "<tr><td>Bachelor's Degree or Higher</td><td>", round(profile$education$pct_bachelors_degree, 1), "%</td></tr>",
+        "<tr><td>Student-Teacher Ratio</td><td>", round(profile$education$student_teacher_ratio, 1), "</td></tr>",
+        "</table>",
+        
+        "<hr>",
+        "<p><em>Report generated by Iowa Cities Dashboard</em></p>",
+        "</body></html>"
+      )
+      
+      writeLines(html_content, file)
+    }
+  )
+  
+  # Download all data (bulk export)
+  output$download_all_data <- downloadHandler(
+    filename = function() {
+      log_event("DOWNLOAD_BULK", "All cities data")
+      paste0("iowa_cities_complete_", Sys.Date(), ".csv")
+    },
+    content = function(file) {
+      export_data <- scores %>%
+        select(
+          City = city,
+          Region = region,
+          Population = population,
+          Rank = rank,
+          Overall_Score = overall_score,
+          Safety_Score = safety_score,
+          Housing_Score = housing_score,
+          Education_Score = education_score,
+          Economic_Score = economic_score,
+          Healthcare_Score = healthcare_score,
+          Livability_Score = livability_score_calc,
+          Median_Income = median_household_income,
+          Median_Home_Value = median_home_value,
+          Graduation_Rate = graduation_rate,
+          Unemployment_Rate = unemployment_rate,
+          Violent_Crime_Rate = violent_crime_rate
+        ) %>%
+        mutate(across(where(is.numeric), ~round(., 2)))
+      
+      write_csv(export_data, file)
+    }
+  )
+  
+  # Download rankings
+  output$download_rankings <- downloadHandler(
+    filename = function() {
+      cat_name <- gsub("_score", "", input$ranking_category)
+      log_event("DOWNLOAD_RANKINGS", paste0("Category: ", cat_name))
+      paste0("iowa_rankings_", cat_name, "_", Sys.Date(), ".csv")
+    },
+    content = function(file) {
+      cat_col <- input$ranking_category
+      
+      rankings <- scores %>%
+        arrange(desc(.data[[cat_col]])) %>%
+        mutate(Rank = row_number()) %>%
+        select(Rank, City = city, Region = region, Population = population,
+               Score = all_of(cat_col)) %>%
+        mutate(Score = round(Score, 1))
+      
+      write_csv(rankings, file)
+    }
+  )
 }
 
 # =============================================================================

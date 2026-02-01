@@ -98,3 +98,203 @@ test_that("summarise_numeric works with grouping", {
   
   expect_equal(nrow(result), 2)
 })
+
+# =============================================================================
+# NEW TESTS: normalize function
+# =============================================================================
+
+test_that("normalize scales values to 0-100", {
+  result <- normalize(c(0, 50, 100))
+  
+  expect_equal(result[1], 0)
+  expect_equal(result[2], 50)
+  expect_equal(result[3], 100)
+})
+
+test_that("normalize handles reverse parameter", {
+  result <- normalize(c(0, 50, 100), reverse = TRUE)
+  
+  expect_equal(result[1], 100)
+  expect_equal(result[2], 50)
+  expect_equal(result[3], 0)
+})
+
+test_that("normalize handles NA values", {
+  result <- normalize(c(0, NA, 100))
+  
+  expect_equal(result[1], 0)
+  expect_true(is.na(result[2]))
+  expect_equal(result[3], 100)
+})
+
+test_that("normalize handles all-same values", {
+  result <- normalize(c(5, 5, 5))
+  
+  # Should return 50 for all when values are identical
+
+  expect_true(all(result == 50))
+})
+
+test_that("normalize handles all-NA values", {
+  result <- normalize(c(NA, NA, NA))
+  
+  expect_true(all(is.na(result)))
+})
+
+test_that("normalize returns rounded values", {
+  result <- normalize(c(0, 33, 100))
+  
+  # Should be rounded to 1 decimal place
+
+  expect_equal(result[2], 33.0)
+})
+
+# =============================================================================
+# NEW TESTS: weighted_score function
+# =============================================================================
+
+test_that("weighted_score calculates correctly", {
+  df <- data.frame(
+    a = c(100, 0),
+    b = c(0, 100)
+  )
+  
+  result <- weighted_score(a = 0.5, b = 0.5, data = df)
+  
+  expect_equal(result[1], 50)
+  expect_equal(result[2], 50)
+})
+
+test_that("weighted_score warns when weights don't sum to 1", {
+  df <- data.frame(a = c(100), b = c(100))
+  
+  expect_warning(
+    weighted_score(a = 0.3, b = 0.3, data = df),
+    "Weights do not sum to 1"
+  )
+})
+
+test_that("weighted_score handles missing columns gracefully", {
+  df <- data.frame(a = c(100))
+  
+  # Should not error, missing column treated as 0
+  result <- weighted_score(a = 0.5, missing_col = 0.5, data = df)
+  
+  expect_equal(result[1], 50)
+})
+
+# =============================================================================
+# NEW TESTS: safe_read_csv function
+# =============================================================================
+
+test_that("safe_read_csv returns NULL for non-existent file", {
+  result <- safe_read_csv("nonexistent_file.csv")
+  
+  expect_null(result)
+})
+
+test_that("safe_read_csv tries fallback path", {
+  # Create a temp file for testing
+  temp_file <- tempfile(fileext = ".csv")
+  write.csv(data.frame(x = 1:3), temp_file, row.names = FALSE)
+  
+  result <- safe_read_csv("nonexistent.csv", fallback_path = temp_file)
+  
+  expect_false(is.null(result))
+  expect_equal(nrow(result), 3)
+  
+  unlink(temp_file)
+})
+
+test_that("safe_read_csv errors when required file missing", {
+  expect_error(
+    safe_read_csv("nonexistent.csv", required = TRUE),
+    "Required file not found"
+  )
+})
+
+# =============================================================================
+# NEW TESTS: validate_iowa_data function
+# =============================================================================
+
+test_that("validate_iowa_data catches missing columns", {
+  df <- data.frame(population = 1:5)
+  
+  result <- validate_iowa_data(df, required_cols = c("city", "population"))
+  
+  expect_false(result$is_valid)
+  expect_true(any(grepl("Missing columns", result$issues)))
+})
+
+test_that("validate_iowa_data catches empty data", {
+  df <- data.frame(city = character(0))
+  
+  result <- validate_iowa_data(df)
+  
+  expect_false(result$is_valid)
+  expect_true(any(grepl("no rows", result$issues)))
+})
+
+test_that("validate_iowa_data catches unknown cities", {
+  df <- data.frame(city = c("Des Moines", "Fake City"))
+  
+  result <- validate_iowa_data(df, check_cities = TRUE)
+  
+  expect_false(result$is_valid)
+  expect_true(any(grepl("Unknown cities", result$issues)))
+})
+
+test_that("validate_iowa_data passes valid data", {
+  df <- data.frame(
+    city = c("Des Moines", "Cedar Rapids", "Iowa City"),
+    population = c(1, 2, 3)
+  )
+  
+  result <- validate_iowa_data(df, check_cities = TRUE)
+  
+  expect_true(result$is_valid)
+  expect_length(result$issues, 0)
+})
+
+# =============================================================================
+# NEW TESTS: iowa_colors function
+# =============================================================================
+
+test_that("iowa_colors returns correct number of colors", {
+  result <- iowa_colors(n = 5)
+  
+  expect_length(result, 5)
+})
+  
+test_that("iowa_colors returns hex colors", {
+  result <- iowa_colors(n = 3)
+  
+  expect_true(all(grepl("^#[0-9A-Fa-f]{6}$", result)))
+})
+
+test_that("iowa_colors warns for unknown palette", {
+  expect_warning(
+    iowa_colors(palette = "unknown_palette"),
+    "Unknown palette"
+  )
+})
+
+# =============================================================================
+# NEW TESTS: format_elapsed function
+# =============================================================================
+
+test_that("format_elapsed formats seconds correctly", {
+  start <- Sys.time() - 30  # 30 seconds ago
+  
+  result <- format_elapsed(start)
+  
+  expect_true(grepl("seconds", result))
+})
+
+test_that("format_elapsed formats minutes correctly", {
+  start <- Sys.time() - 120  # 2 minutes ago
+  
+  result <- format_elapsed(start)
+  
+  expect_true(grepl("minutes", result))
+})

@@ -1,3 +1,4 @@
+source("renv/activate.R")
 # R Profile - Auto-loaded when opening this project
 # ================================================
 

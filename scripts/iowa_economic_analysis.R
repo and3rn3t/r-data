@@ -9,6 +9,9 @@ library(corrplot)
 
 source(here("scripts/00_setup.R"))
 source(here("scripts/utils.R"))
+source(here("scripts/constants.R"))
+
+start_time <- Sys.time()
 
 # =============================================================================
 # Data Sources for Economic Data

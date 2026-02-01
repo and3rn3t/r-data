@@ -1,0 +1,47 @@
+Package: rdata
+Title: Iowa Cities Data Analysis
+Version: 1.0.0
+Authors@R: 
+    person("Data Analysis Team", , , "team@example.com", role = c("aut", "cre"))
+Description: Comprehensive analysis of Iowa cities across demographics, 
+    economics, housing, education, crime, healthcare, and environment. 
+    Includes interactive Shiny dashboard, recommendation engine, and 
+    automated report generation.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+Depends: 
+    R (>= 4.0.0)
+Imports:
+    tidyverse (>= 2.0.0),
+    dplyr,
+    ggplot2,
+    readr,
+    tidyr,
+    purrr,
+    stringr,
+    here,
+    scales,
+    shiny,
+    shinydashboard,
+    shinycssloaders,
+    plotly,
+    leaflet,
+    DT,
+    knitr,
+    rmarkdown,
+    htmlwidgets,
+    fmsb
+Suggests:
+    testthat (>= 3.0.0),
+    lintr,
+    covr,
+    janitor,
+    writexl,
+    corrplot,
+    RColorBrewer,
+    targets,
+    tarchetypes,
+    pointblank
+Config/testthat/edition: 3

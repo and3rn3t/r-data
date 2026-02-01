@@ -1,0 +1,62 @@
+# Docker Compose for Iowa Cities Dashboard
+# ==========================================
+
+services:
+  # Main Shiny application
+  iowa-dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: iowa-cities-dashboard
+    ports:
+      - "3838:3838"
+    volumes:
+      # Mount data directory for updates
+      - ./data:/srv/shiny-server/iowa-cities/data:ro
+      # Mount logs directory
+      - ./outputs/logs:/srv/shiny-server/iowa-cities/outputs/logs
+    environment:
+      - SHINY_LOG_LEVEL=INFO
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3838/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Development mode with live reload
+  iowa-dashboard-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: iowa-cities-dev
+    ports:
+      - "3839:3838"
+    volumes:
+      # Mount entire project for development
+      - .:/srv/shiny-server/iowa-cities
+    environment:
+      - SHINY_LOG_LEVEL=DEBUG
+    profiles:
+      - dev
+
+# ==================================
+# Usage:
+# ==================================
+#
+# Production:
+#   docker-compose up -d iowa-dashboard
+#
+# Development:
+#   docker-compose --profile dev up iowa-dashboard-dev
+#
+# View logs:
+#   docker-compose logs -f iowa-dashboard
+#
+# Stop:
+#   docker-compose down
+#
+# Rebuild after changes:
+#   docker-compose build --no-cache
+#   docker-compose up -d

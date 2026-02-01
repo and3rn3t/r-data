@@ -1,0 +1,87 @@
+url: https://and3rn3t.github.io/r-data/
+
+template:
+  bootstrap: 5
+  bootswatch: flatly
+  bslib:
+    primary: "#2c7fb8"
+    secondary: "#7fcdbb"
+
+navbar:
+  structure:
+    left: [intro, reference, articles]
+    right: [search, github]
+  components:
+    intro:
+      text: Getting Started
+      href: articles/getting-started.html
+    reference:
+      text: Function Reference
+      href: reference/index.html
+    articles:
+      text: Guides
+      menu:
+        - text: Data Analysis Workflow
+          href: articles/data-analysis.html
+        - text: Shiny Dashboard Guide
+          href: articles/shiny-guide.html
+        - text: Interactive Tools
+          href: articles/interactive-tools.html
+    github:
+      icon: fab fa-github
+      href: https://github.com/and3rn3t/r-data
+
+reference:
+  - title: Normalization & Scoring
+    desc: Functions for normalizing data and calculating scores
+    contents:
+      - normalize
+      - weighted_score
+      - calculate_ci
+  
+  - title: Data I/O
+    desc: Functions for reading and writing data files
+    contents:
+      - safe_read_csv
+      - load_datasets
+      - safe_write_csv
+      - safe_ggsave
+  
+  - title: Data Quality
+    desc: Functions for data validation and quality checks
+    contents:
+      - validate_iowa_data
+      - data_quality_summary
+      - count_missing
+      - standardize_names
+  
+  - title: Visualization
+    desc: Functions for creating plots
+    contents:
+      - theme_iowa
+      - iowa_colors
+  
+  - title: Constants
+    desc: Project constants and configuration
+    contents:
+      - IOWA_CITIES
+      - CITY_REGIONS
+      - COLORS
+      - SCORE_WEIGHTS
+
+articles:
+  - title: Getting Started
+    navbar: ~
+    contents:
+      - getting-started
+  
+  - title: Guides
+    navbar: Guides
+    contents:
+      - data-analysis
+      - shiny-guide
+      - interactive-tools
+
+authors:
+  Anderson:
+    href: https://github.com/and3rn3t

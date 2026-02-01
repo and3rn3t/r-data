@@ -5,6 +5,9 @@
 library(tidyverse)
 library(here)
 
+source(here("scripts/utils.R"))
+source(here("scripts/constants.R"))
+
 cat("
 ╔═══════════════════════════════════════════════════════════════╗
 ║              IOWA CITY RECOMMENDATION ENGINE                  ║
@@ -27,12 +30,7 @@ demographics <- read_csv(here("data/raw/iowa_demographics_data.csv"), show_col_t
 environment <- read_csv(here("data/raw/iowa_environment_data.csv"), show_col_types = FALSE)
 major_cities <- read_csv(here("data/raw/iowa_major_cities.csv"), show_col_types = FALSE)
 
-# Normalization function
-normalize <- function(x, reverse = FALSE) {
-  scaled <- (x - min(x, na.rm = TRUE)) / (max(x, na.rm = TRUE) - min(x, na.rm = TRUE)) * 100
-  if (reverse) scaled <- 100 - scaled
-  return(round(scaled, 1))
-}
+# normalize() function is now loaded from utils.R
 
 # =============================================================================
 # BUILD MASTER CITY DATABASE

@@ -5,6 +5,9 @@
 library(tidyverse)
 library(here)
 
+source(here("scripts/utils.R"))
+source(here("scripts/constants.R"))
+
 cat("
 ╔═══════════════════════════════════════════════════════════════╗
 ║              IOWA CITIES PREDICTIVE ANALYSIS                  ║

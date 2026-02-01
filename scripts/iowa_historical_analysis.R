@@ -6,6 +6,11 @@ library(tidyverse)
 library(here)
 library(scales)
 
+source(here("scripts/utils.R"))
+source(here("scripts/constants.R"))
+
+start_time <- Sys.time()
+
 cat("
 ╔═══════════════════════════════════════════════════════════════╗
 ║              IOWA HISTORICAL TRENDS ANALYSIS                  ║

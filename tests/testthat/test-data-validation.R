@@ -16,17 +16,14 @@ test_that("iowa_cities_clean.csv has expected structure", {
   
   # Check minimum expected columns
   expect_true("city" %in% tolower(names(df)) | 
-              any(grepl("city|name", names(df), ignore.case = TRUE)),
-              info = "Should have a city/name column")
+              any(grepl("city|name", names(df), ignore.case = TRUE)))
   
   # Check no completely empty rows
   complete_rows <- complete.cases(df)
-  expect_true(sum(complete_rows) > 0, 
-              info = "Should have at least some complete rows")
+  expect_true(sum(complete_rows) > 0)
   
   # Check reasonable row count
-
-  expect_gt(nrow(df), 0, info = "Should have at least one row")
+  expect_gt(nrow(df), 0)
 })
 
 # Test: No duplicate cities ----

@@ -1,13 +1,17 @@
 # Iowa Cities Housing Analysis
 # Analyzes housing market data including home values, rents, and housing stock
+# ==========================================================================
 
 # Load required packages and utilities
 library(tidyverse)
 library(here)
 library(scales)
 
-source(here("scripts/00_setup.R"))
+# Load project utilities and constants
 source(here("scripts/utils.R"))
+source(here("scripts/constants.R"))
+
+start_time <- Sys.time()
 
 # =============================================================================
 # Housing Data Import
@@ -343,7 +347,7 @@ p5 <- iowa_housing %>%
   theme(legend.position = "none")
 
 print(p5)
-ggsave(here("outputs/iowa_construction_activity.png"), p5, width = 10, height = 8, dpi = 300)
+safe_ggsave(p5, here("outputs/figures/iowa_construction_activity.png"))
 
 # =============================================================================
 # Housing Affordability Index
@@ -353,13 +357,10 @@ cat("\n=== Housing Affordability Index ===\n\n")
 
 iowa_housing <- iowa_housing %>%
   mutate(
-    # Normalize metrics (lower is more affordable)
-    value_score = 100 - ((median_home_value - min(median_home_value)) / 
-                         (max(median_home_value) - min(median_home_value)) * 100),
-    rent_score = 100 - ((median_rent - min(median_rent)) / 
-                        (max(median_rent) - min(median_rent)) * 100),
-    vacancy_score = (vacancy_rate - min(vacancy_rate)) / 
-                    (max(vacancy_rate) - min(vacancy_rate)) * 50,  # Some vacancy is good
+    # Normalize metrics using utility function (lower is more affordable)
+    value_score = normalize(median_home_value, reverse = TRUE),
+    rent_score = normalize(median_rent, reverse = TRUE),
+    vacancy_score = normalize(vacancy_rate) * 0.5,  # Some vacancy is good
     
     # Composite affordability index
     affordability_index = (value_score * 0.5 + rent_score * 0.4 + vacancy_score * 0.1)
@@ -381,8 +382,7 @@ iowa_housing %>%
 # Save Processed Data
 # =============================================================================
 
-write_csv(iowa_housing, here("data/processed/iowa_housing_analyzed.csv"))
-cat("\n✓ Housing analysis data saved to: data/processed/iowa_housing_analyzed.csv\n")
+safe_write_csv(iowa_housing, here("data/processed/iowa_housing_analyzed.csv"))
 
 cat("\n=== Housing Analysis Complete ===\n")
-cat("Visualizations saved to outputs/ folder\n")
+cat("Time elapsed:", format_elapsed(start_time), "\n")

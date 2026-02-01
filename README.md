@@ -5,12 +5,24 @@ A complete, ready-to-use workspace for data analysis with R. This repository pro
 ## 📋 Table of Contents
 
 - [Features](#features)
+- [Quick Start](#quick-start)
 - [Directory Structure](#directory-structure)
 - [Getting Started](#getting-started)
 - [Workflow](#workflow)
 - [Usage Examples](#usage-examples)
 - [Best Practices](#best-practices)
+- [Additional Resources](#additional-resources)
 - [Contributing](#contributing)
+
+## 🚀 Quick Start
+
+**New to this workspace?** Start here:
+
+1. **[Read the Quick Start Guide](QUICKSTART.md)** - Get up and running in 5 minutes
+2. **Run the example workflow**: `source("example_workflow.R")` - See a complete analysis in action
+3. **Explore the templates** in `notebooks/` - Ready-to-use R Markdown files
+
+**Already familiar?** Jump to [Getting Started](#getting-started) or [Workflow](#workflow)
 
 ## ✨ Features
 
@@ -188,13 +200,32 @@ clean_data <- standardize_names(my_data)
 - **Document sessions**: Include `sessionInfo()` in reports
 - **Test your code**: Ensure scripts can run from start to finish
 
+## 📖 Additional Resources
+
+### Included Documentation
+- **[QUICKSTART.md](QUICKSTART.md)** - 5-minute setup guide with common tasks
+- **[example_workflow.R](example_workflow.R)** - Complete working example from data to results
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Guidelines for contributing
+- **Directory READMEs** - Specific guidance for each folder
+
+### External Learning Resources
+- [R for Data Science](https://r4ds.had.co.nz/) - Free online book
+- [RStudio Cheatsheets](https://posit.co/resources/cheatsheets/) - Quick references
+- [Tidyverse Documentation](https://www.tidyverse.org/) - Package guides
+- [R Markdown Guide](https://rmarkdown.rstudio.com/) - Report creation
+
 ## 🤝 Contributing
 
-Feel free to fork this repository and customize it for your needs. Suggestions and improvements are welcome!
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+Feel free to:
+- Report bugs or suggest features via GitHub Issues
+- Submit pull requests with improvements
+- Share your own analysis templates or utility functions
 
 ## 📝 License
 
-This project is open source and available for anyone to use and modify.
+This project is available under the MIT License. See [LICENSE](LICENSE) for details.
 
 ## 📧 Contact
 

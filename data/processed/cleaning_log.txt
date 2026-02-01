@@ -1,6 +1,6 @@
 Iowa Cities Data Cleaning Log
 =============================
-Date: 2026-02-01 14:06:50.585217 
+Date: 2026-02-01 14:21:38.244203 
 Source: Census 
 Original rows: 940 
 Cleaned rows: 940 

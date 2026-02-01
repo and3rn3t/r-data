@@ -1,0 +1,21 @@
+city,county,school_district,total_students,state_assessment_score,graduation_rate,college_readiness_pct,per_pupil_spending,student_teacher_ratio,pct_high_school,pct_bachelors,pct_graduate_degree,has_university,has_community_college,university_name
+Des Moines,Polk,Des Moines ISD,32450,62.5,82.5,42.5,12450,16.2,88.2,28.5,10.2,TRUE,TRUE,Drake University
+Cedar Rapids,Linn,Cedar Rapids CSD,15890,71.2,89.2,52.4,11850,15.5,92.5,32.4,12.5,FALSE,TRUE,NA
+Davenport,Scott,Davenport CSD,14520,58.4,78.4,38.2,11520,17.8,89.4,24.8,8.5,FALSE,TRUE,NA
+Sioux City,Woodbury,Sioux City CSD,13250,54.8,76.5,35.8,10980,18.2,85.8,22.5,7.2,FALSE,TRUE,NA
+Iowa City,Johnson,Iowa City CSD,14180,78.5,92.8,68.5,13250,14.5,95.8,58.2,32.5,TRUE,TRUE,University of Iowa
+Waterloo,Black Hawk,Waterloo CSD,10250,52.4,74.2,32.5,10650,17.5,87.5,21.8,7.8,FALSE,TRUE,NA
+Ames,Story,Ames CSD,4850,82.1,94.5,75.2,12850,15.2,96.8,62.5,35.2,TRUE,FALSE,Iowa State University
+West Des Moines,Polk,West Des Moines CSD,9450,84.5,96.2,72.8,13450,14.8,97.2,52.8,22.5,FALSE,TRUE,NA
+Ankeny,Polk,Ankeny CSD,12350,82.8,95.8,70.5,12680,15.5,98.1,48.5,18.5,FALSE,TRUE,NA
+Council Bluffs,Pottawattamie,Council Bluffs CSD,8950,56.2,79.5,38.5,10850,17.2,88.5,22.8,7.5,FALSE,TRUE,NA
+Dubuque,Dubuque,Dubuque CSD,10120,72.4,91.2,55.8,11980,15.8,92.8,32.5,11.8,TRUE,TRUE,University of Dubuque
+Urbandale,Polk,Urbandale CSD,4250,85.2,97.1,74.5,13120,14.5,97.5,54.2,24.5,FALSE,FALSE,NA
+Cedar Falls,Black Hawk,Cedar Falls CSD,5680,78.9,93.5,65.2,12450,15.2,95.2,42.8,18.2,TRUE,FALSE,UNI
+Marion,Linn,Linn-Mar CSD,7450,81.5,94.8,68.4,12580,14.8,96.8,45.2,16.5,FALSE,TRUE,NA
+Bettendorf,Scott,Bettendorf CSD,4520,83.4,96.5,71.2,13050,14.2,97.5,48.5,19.8,FALSE,FALSE,NA
+Mason City,Cerro Gordo,Mason City CSD,4180,65.8,86.5,45.2,11250,16.5,90.5,24.5,8.5,FALSE,TRUE,NA
+Marshalltown,Marshall,Marshalltown CSD,4650,48.5,72.8,28.5,10450,18.5,78.5,15.8,5.2,FALSE,TRUE,NA
+Clinton,Clinton,Clinton CSD,3890,52.1,78.5,32.8,10280,17.8,86.2,18.2,6.5,FALSE,TRUE,NA
+Burlington,Des Moines,Burlington CSD,4120,58.4,81.2,38.5,10650,17.2,88.5,20.5,7.2,FALSE,TRUE,NA
+Fort Dodge,Webster,Fort Dodge CSD,3850,54.2,77.5,34.2,10180,18.8,86.8,18.8,6.8,FALSE,TRUE,NA

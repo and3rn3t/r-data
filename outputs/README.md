@@ -7,6 +7,7 @@ This directory contains all generated outputs from the analysis.
 - **figures/**: Generated plots and visualizations
 - **tables/**: Generated tables and summaries
 - **reports/**: Rendered R Markdown reports
+- **logs/**: Execution logs from `run_all_iowa_analyses.R` (when `--log` flag is used)
 
 ## Note
 

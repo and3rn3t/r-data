@@ -1,0 +1,21 @@
+city,county,population,has_airport,airport_type,interstate_access,highway_miles_radius_10,public_transit_available,bus_routes,transit_ridership_annual,amtrak_station,freight_rail,avg_commute_time_min,drive_alone_pct,carpool_pct,public_transit_pct,walk_pct,work_from_home_pct,ev_charging_stations,broadband_coverage_pct,avg_internet_speed_mbps
+Des Moines,Polk,214237,TRUE,Commercial,TRUE,85.2,TRUE,42,4250000,FALSE,TRUE,21.5,82.5,8.5,2.2,2.5,4.3,125,98.5,245
+Cedar Rapids,Linn,137710,TRUE,Commercial,TRUE,72.5,TRUE,18,1850000,FALSE,TRUE,19.8,84.2,8.2,1.5,2.2,3.9,68,97.8,225
+Davenport,Scott,101724,TRUE,Commercial,TRUE,45.8,TRUE,15,1250000,FALSE,TRUE,22.4,83.5,9.2,1.8,2.0,3.5,42,96.5,185
+Sioux City,Woodbury,85797,TRUE,Commercial,TRUE,38.5,TRUE,12,650000,FALSE,TRUE,18.5,85.2,8.8,1.2,1.8,3.0,28,94.2,165
+Iowa City,Johnson,74828,FALSE,None,TRUE,52.4,TRUE,28,2850000,FALSE,TRUE,18.2,68.5,8.5,5.5,12.2,5.3,85,99.2,285
+Waterloo,Black Hawk,67314,TRUE,Regional,TRUE,42.8,TRUE,14,580000,FALSE,TRUE,20.5,84.8,9.5,1.5,1.5,2.7,32,95.5,175
+Ames,Story,66427,FALSE,None,TRUE,35.2,TRUE,22,1850000,FALSE,TRUE,15.2,62.5,7.8,4.8,18.5,6.4,72,99.5,295
+West Des Moines,Polk,68723,FALSE,None,TRUE,48.5,FALSE,0,0,FALSE,TRUE,22.8,88.5,6.5,0.5,1.2,3.3,95,99.2,285
+Ankeny,Polk,67355,FALSE,None,TRUE,42.2,FALSE,0,0,FALSE,TRUE,24.5,89.2,6.2,0.3,0.8,3.5,82,99.5,295
+Council Bluffs,Pottawattamie,62230,FALSE,None,TRUE,65.8,TRUE,8,320000,TRUE,TRUE,25.2,84.5,9.8,1.2,1.5,3.0,28,96.2,195
+Dubuque,Dubuque,59667,TRUE,Regional,FALSE,28.5,TRUE,10,425000,FALSE,TRUE,18.5,82.5,8.5,1.8,3.5,3.7,38,97.5,205
+Urbandale,Polk,45580,FALSE,None,TRUE,38.2,FALSE,0,0,FALSE,TRUE,20.2,89.5,5.8,0.2,0.5,4.0,62,99.5,295
+Cedar Falls,Black Hawk,40713,FALSE,None,TRUE,28.5,TRUE,8,285000,FALSE,TRUE,16.8,75.5,8.2,2.5,8.5,5.3,42,98.8,255
+Marion,Linn,40359,FALSE,None,TRUE,32.5,FALSE,0,0,FALSE,TRUE,21.5,88.2,7.5,0.5,1.2,2.6,35,98.5,245
+Bettendorf,Scott,39102,FALSE,None,TRUE,35.8,TRUE,5,125000,FALSE,TRUE,22.8,87.5,7.2,0.8,1.5,3.0,42,98.8,255
+Mason City,Cerro Gordo,27088,TRUE,Regional,TRUE,25.2,FALSE,0,0,FALSE,TRUE,15.2,86.5,8.5,0.5,2.0,2.5,12,94.5,145
+Marshalltown,Marshall,26486,FALSE,None,TRUE,22.5,FALSE,0,0,FALSE,TRUE,14.5,85.2,10.5,0.3,1.5,2.5,8,92.5,125
+Clinton,Clinton,24462,FALSE,None,FALSE,18.5,FALSE,0,0,TRUE,TRUE,18.2,84.8,10.2,0.5,1.8,2.7,6,91.5,115
+Burlington,Des Moines,24505,TRUE,Regional,FALSE,15.8,TRUE,4,85000,TRUE,TRUE,16.5,85.5,9.2,0.8,2.2,2.3,8,92.8,135
+Fort Dodge,Webster,24264,TRUE,Regional,FALSE,18.5,FALSE,0,0,FALSE,TRUE,15.8,86.2,9.5,0.3,1.5,2.5,10,93.5,145

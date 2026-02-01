@@ -1,0 +1,21 @@
+city,county,population,median_household_income,per_capita_income,poverty_rate,unemployment_rate,labor_force_participation,job_growth_rate,largest_employer,total_businesses,businesses_per_1000,retail_sales_per_capita,manufacturing_jobs_pct,tech_jobs_pct,healthcare_jobs_pct,avg_commute_time_min
+Des Moines,Polk,214237,58450,34250,12.5,3.8,68.5,2.8,Principal Financial,12450,58.2,15420,8.5,6.2,12.8,21.5
+Cedar Rapids,Linn,137710,62180,36450,9.8,3.2,71.2,2.2,Collins Aerospace,8520,61.8,14850,12.4,5.8,11.2,19.8
+Davenport,Scott,101724,52450,30850,14.2,4.5,66.8,1.5,Genesis Health,5890,57.9,13250,10.2,3.5,14.5,22.4
+Sioux City,Woodbury,85797,48950,28650,15.8,4.2,65.4,1.2,Tyson Foods,4250,49.5,12580,14.8,2.8,10.5,18.5
+Iowa City,Johnson,74828,55850,32450,18.2,2.8,72.5,3.2,University of Iowa,4850,64.8,16250,4.2,8.5,22.5,18.2
+Waterloo,Black Hawk,67314,45650,26850,16.5,5.2,64.2,0.8,John Deere,3580,53.2,11850,15.2,3.2,12.5,20.5
+Ames,Story,66427,42850,28950,22.5,2.5,68.8,3.5,Iowa State University,3250,48.9,14520,5.8,12.5,8.5,15.2
+West Des Moines,Polk,68723,85450,48250,5.2,2.2,76.5,4.2,Wells Fargo,5420,78.9,22450,3.2,15.8,8.2,22.8
+Ankeny,Polk,67355,92850,45650,4.8,2.0,78.2,5.5,John Deere,4850,72.0,18950,6.5,12.2,7.5,24.5
+Council Bluffs,Pottawattamie,62230,52450,29850,13.5,4.0,67.5,1.8,Google Data Center,3120,50.1,13850,8.5,4.5,10.8,25.2
+Dubuque,Dubuque,59667,54850,31250,11.2,3.5,69.8,2.0,John Deere,3580,60.0,14250,12.8,4.2,11.5,18.5
+Urbandale,Polk,45580,78950,42850,4.5,2.1,75.8,3.8,EMC Insurance,3250,71.3,19850,4.5,14.5,6.8,20.2
+Cedar Falls,Black Hawk,40713,52450,30250,15.5,3.0,70.5,2.5,UNI,2180,53.5,13850,6.2,5.8,8.5,16.8
+Marion,Linn,40359,72850,38950,5.8,2.4,74.2,3.2,Rockwell Collins,2450,60.7,16250,8.5,7.2,9.5,21.5
+Bettendorf,Scott,39102,82450,44250,4.2,2.0,76.8,3.5,Isle Casino,2380,60.9,18450,5.8,8.5,10.2,22.8
+Mason City,Cerro Gordo,27088,45250,27450,12.8,4.2,65.8,0.5,Mercy Medical,1420,52.4,11250,10.5,2.5,15.8,15.2
+Marshalltown,Marshall,26486,42850,24650,16.2,5.5,62.5,-0.5,JBS USA,1180,44.6,9850,18.5,1.8,8.5,14.5
+Clinton,Clinton,24462,38950,22850,18.5,6.2,60.8,-1.2,ADM,985,40.3,8950,12.5,1.5,12.2,18.2
+Burlington,Des Moines,24505,42450,25650,14.8,4.8,63.5,0.2,Great River Medical,1050,42.8,10250,11.8,2.2,14.5,16.5
+Fort Dodge,Webster,24264,44850,26450,13.5,4.5,64.2,0.5,Trinity Regional,1120,46.2,10850,9.8,2.0,16.2,15.8

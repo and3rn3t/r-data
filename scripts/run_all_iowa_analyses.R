@@ -79,7 +79,7 @@ cat("✓ Housing analysis complete\n")
 # Step 7: Education Analysis
 # =============================================================================
 
-cat("\n[7/7] Running education analysis...\n")
+cat("\n[7/12] Running education analysis...\n")
 cat(rep("-", 50), "\n", sep = "")
 
 source(here("scripts/iowa_education_analysis.R"))
@@ -89,11 +89,51 @@ cat("✓ Education analysis complete\n")
 # Step 8: Crime and Safety Analysis
 # =============================================================================
 
-cat("\n[8/8] Running crime and safety analysis...\n")
+cat("\n[8/12] Running crime and safety analysis...\n")
 cat(rep("-", 50), "\n", sep = "")
 
 source(here("scripts/iowa_crime_safety_analysis.R"))
 cat("✓ Crime and safety analysis complete\n")
+
+# =============================================================================
+# Step 9: Demographics Analysis
+# =============================================================================
+
+cat("\n[9/12] Running demographics analysis...\n")
+cat(rep("-", 50), "\n", sep = "")
+
+source(here("scripts/iowa_demographics_analysis.R"))
+cat("✓ Demographics analysis complete\n")
+
+# =============================================================================
+# Step 10: Environment Analysis
+# =============================================================================
+
+cat("\n[10/12] Running environment analysis...\n")
+cat(rep("-", 50), "\n", sep = "")
+
+source(here("scripts/iowa_environment_analysis.R"))
+cat("✓ Environment analysis complete\n")
+
+# =============================================================================
+# Step 11: Historical Trends Analysis
+# =============================================================================
+
+cat("\n[11/12] Running historical trends analysis...\n")
+cat(rep("-", 50), "\n", sep = "")
+
+source(here("scripts/iowa_historical_analysis.R"))
+cat("✓ Historical trends analysis complete\n")
+
+# =============================================================================
+# Step 12: Comprehensive Multi-Dataset Analysis
+# =============================================================================
+
+cat("\n[12/12] Running comprehensive analysis (all datasets)...\n")
+cat(rep("-", 50), "\n", sep = "")
+
+source(here("scripts/iowa_comprehensive_analysis.R"))
+cat("✓ Comprehensive analysis complete\n")
 
 # =============================================================================
 # Summary

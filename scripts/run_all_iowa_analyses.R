@@ -288,6 +288,34 @@ STEPS <- list(
     description = "Historical trends analysis"
   ),
   list(
+    name = "Family Analysis", 
+    script = "scripts/iowa_family_analysis.R", 
+    required = FALSE,
+    group = 4,
+    description = "Family-friendliness analysis"
+  ),
+  list(
+    name = "Climate Analysis", 
+    script = "scripts/iowa_climate_analysis.R", 
+    required = FALSE,
+    group = 4,
+    description = "Climate and weather analysis"
+  ),
+  list(
+    name = "Senior Analysis", 
+    script = "scripts/iowa_senior_analysis.R", 
+    required = FALSE,
+    group = 4,
+    description = "Senior living analysis"
+  ),
+  list(
+    name = "Pet-Friendly Analysis", 
+    script = "scripts/iowa_pets_analysis.R", 
+    required = FALSE,
+    group = 4,
+    description = "Pet-friendliness analysis"
+  ),
+  list(
     name = "Comprehensive Analysis", 
     script = "scripts/iowa_comprehensive_analysis.R", 
     required = FALSE,

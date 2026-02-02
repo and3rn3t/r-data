@@ -276,10 +276,28 @@ test_that("Next run time calculation works", {
   # Find next Monday at 6 AM
   find_next_run <- function() {
     now <- Sys.time()
-    days_until_monday <- (8 - as.integer(format(now, "%u"))) %% 7
+    today <- Sys.Date()  # Use Sys.Date() to avoid timezone issues with as.Date(POSIXct)
+    current_day <- as.integer(format(now, "%u"))  # 1=Monday, 7=Sunday
+    
+    # Calculate days until next Monday
+    # %u: Monday=1, Tuesday=2, ..., Sunday=7
+    # From Monday (1): 7 days to next Monday (if already past 6 AM)
+    # From Tuesday (2): 6 days to next Monday
+    # From Sunday (7): 1 day to next Monday
+    days_until_monday <- (8 - current_day) %% 7
     if (days_until_monday == 0) days_until_monday <- 7
     
-    next_monday <- as.Date(now) + days_until_monday
+    if (current_day == 1) {
+      # Today is Monday - check if we're before 6 AM
+      target_today <- as.POSIXct(paste(today, "06:00:00"))
+      if (now < target_today) {
+        return(target_today)
+      }
+      # Already past 6 AM Monday, schedule for next Monday (7 days)
+      days_until_monday <- 7
+    }
+    
+    next_monday <- today + days_until_monday
     return(as.POSIXct(paste(next_monday, "06:00:00")))
   }
   

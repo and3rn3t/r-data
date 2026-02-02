@@ -33,6 +33,153 @@ default:
     confidence_level: 0.95
     seed: 42
     missing_threshold: 0.10  # Flag columns with >10% missing
+  
+  # ==========================================================================
+  # SCORING CONFIGURATION
+  # ==========================================================================
+  
+  # Default category weights (must sum to 1.0)
+  scoring:
+    weights:
+      safety: 0.15
+      housing: 0.15
+      education: 0.15
+      economic: 0.20
+      healthcare: 0.15
+      livability: 0.10
+      connectivity: 0.10
+      # Optional categories (default to 0)
+      family: 0.00
+      climate: 0.00
+      senior: 0.00
+      pet: 0.00
+  
+  # ==========================================================================
+  # LIFESTYLE MODE PRESETS
+  # ==========================================================================
+  
+  lifestyle_modes:
+    balanced:
+      name: "Balanced"
+      description: "Equal emphasis on all core factors"
+      icon: "balance-scale"
+      weights:
+        safety: 0.15
+        housing: 0.15
+        education: 0.15
+        economic: 0.15
+        healthcare: 0.15
+        livability: 0.15
+        connectivity: 0.10
+        family: 0.00
+        climate: 0.00
+        senior: 0.00
+        pet: 0.00
+    
+    family_focus:
+      name: "Family Focus"
+      description: "Prioritizes safety, schools, and family amenities"
+      icon: "users"
+      weights:
+        safety: 0.20
+        housing: 0.10
+        education: 0.25
+        economic: 0.10
+        healthcare: 0.10
+        livability: 0.05
+        connectivity: 0.05
+        family: 0.15
+        climate: 0.00
+        senior: 0.00
+        pet: 0.00
+    
+    career_focus:
+      name: "Career Focus"
+      description: "Emphasizes jobs, economy, and connectivity"
+      icon: "briefcase"
+      weights:
+        safety: 0.10
+        housing: 0.15
+        education: 0.10
+        economic: 0.30
+        healthcare: 0.10
+        livability: 0.10
+        connectivity: 0.15
+        family: 0.00
+        climate: 0.00
+        senior: 0.00
+        pet: 0.00
+    
+    retirement_focus:
+      name: "Retirement Focus"
+      description: "Prioritizes healthcare, safety, and senior services"
+      icon: "user-clock"
+      weights:
+        safety: 0.20
+        housing: 0.10
+        education: 0.00
+        economic: 0.05
+        healthcare: 0.25
+        livability: 0.10
+        connectivity: 0.05
+        family: 0.00
+        climate: 0.10
+        senior: 0.15
+        pet: 0.00
+    
+    outdoor_pet_lover:
+      name: "Outdoor & Pet Lover"
+      description: "Emphasizes environment, climate, and pet-friendliness"
+      icon: "paw"
+      weights:
+        safety: 0.10
+        housing: 0.10
+        education: 0.05
+        economic: 0.10
+        healthcare: 0.10
+        livability: 0.20
+        connectivity: 0.05
+        family: 0.00
+        climate: 0.15
+        senior: 0.00
+        pet: 0.15
+  
+  # ==========================================================================
+  # THEME CONFIGURATION
+  # ==========================================================================
+  
+  themes:
+    default: "light"
+    available:
+      - light
+      - dark
+      - high_contrast
+      - iowa_gold
+    
+    definitions:
+      light:
+        name: "Light"
+        accent: "#3498db"
+        bg_primary: "#ffffff"
+        text_primary: "#333333"
+      
+      dark:
+        name: "Dark"
+        accent: "#4299e1"
+        bg_primary: "#1a1a2e"
+        text_primary: "#eeeeee"
+      
+      high_contrast:
+        name: "High Contrast"
+        accent: "#00ffff"
+        bg_primary: "#000000"
+        text_primary: "#ffffff"
+      
+      iowa_gold:
+        name: "Iowa Gold"
+        accent: "#c9a227"
+        bg_primary: "#fffbf0"
+        text_primary: "#3d2e0a"
 
 development:
   inherits: default

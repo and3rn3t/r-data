@@ -1,0 +1,82 @@
+# Pre-commit hooks for R Data Analysis Project
+# Install: pip install pre-commit && pre-commit install
+# Run: pre-commit run --all-files
+
+repos:
+  # Standard pre-commit hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: '\.Rhistory|\.RData'
+      - id: end-of-file-fixer
+        exclude: '\.Rhistory|\.RData|\.csv$'
+      - id: check-yaml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ['--maxkb=500']
+        exclude: 'data/raw/.*\.csv$'
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+
+  # R-specific linting with lintr
+  - repo: local
+    hooks:
+      - id: lintr
+        name: R linting with lintr
+        entry: Rscript -e "lintr::lint_dir('scripts', pattern = 'R$')"
+        language: system
+        files: '\.R$'
+        pass_filenames: false
+        stages: [commit]
+      
+      - id: r-syntax-check
+        name: R syntax check
+        entry: Rscript -e "for (f in commandArgs(TRUE)) { tryCatch(parse(f), error = function(e) stop(f, ': ', e$message)) }"
+        language: system
+        files: '\.R$'
+        types: [r]
+
+      - id: roxygen-check
+        name: Check roxygen documentation
+        entry: Rscript -e "devtools::document()"
+        language: system
+        files: '^R/.*\.R$'
+        pass_filenames: false
+        stages: [commit]
+
+  # Markdown linting
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.38.0
+    hooks:
+      - id: markdownlint
+        args: ['--fix', '--disable', 'MD013', 'MD033', 'MD041']
+        exclude: 'CHANGELOG\.md|notebooks/.*\.Rmd$'
+
+  # Secret detection
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: 'renv\.lock|\.Rprofile'
+
+  # YAML linting
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.33.0
+    hooks:
+      - id: yamllint
+        args: ['-d', '{extends: relaxed, rules: {line-length: disable}}']
+
+# Configuration for commit message formatting
+ci:
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes from pre-commit hooks
+
+  autofix_prs: true
+  autoupdate_branch: ''
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_schedule: weekly
+  skip: [lintr, r-syntax-check, roxygen-check]  # Skip R checks in CI
+  submodules: false

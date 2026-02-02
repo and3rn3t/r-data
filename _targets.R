@@ -77,6 +77,34 @@ list(
     format = "rds"
   ),
   
+  tar_target(
+    name = raw_iowa_family,
+    command = read_csv(here("data/raw/iowa_family_data.csv"),
+                       show_col_types = FALSE),
+    format = "rds"
+  ),
+  
+  tar_target(
+    name = raw_iowa_climate,
+    command = read_csv(here("data/raw/iowa_climate_data.csv"),
+                       show_col_types = FALSE),
+    format = "rds"
+  ),
+  
+  tar_target(
+    name = raw_iowa_senior,
+    command = read_csv(here("data/raw/iowa_senior_data.csv"),
+                       show_col_types = FALSE),
+    format = "rds"
+  ),
+  
+  tar_target(
+    name = raw_iowa_pets,
+    command = read_csv(here("data/raw/iowa_pets_data.csv"),
+                       show_col_types = FALSE),
+    format = "rds"
+  ),
+  
   # -------------------------------------------------------------------------
   # Data Cleaning Targets
   # -------------------------------------------------------------------------
@@ -130,12 +158,23 @@ list(
         left_join(raw_iowa_education %>% select(city, graduation_rate, college_readiness_pct, pct_bachelors), by = "city") %>%
         left_join(raw_iowa_economic %>% select(city, median_household_income, unemployment_rate, poverty_rate), by = "city") %>%
         left_join(raw_iowa_healthcare %>% select(city, life_expectancy, health_insurance_coverage_pct), by = "city") %>%
+        left_join(raw_iowa_family %>% select(city, daycare_centers_per_10000, pediatricians_per_10000, playgrounds_per_10000, daycare_availability), by = "city") %>%
+        left_join(raw_iowa_climate %>% select(city, sunny_days, severe_weather_events, climate_comfort_index), by = "city") %>%
+        left_join(raw_iowa_senior %>% select(city, senior_centers_per_10000, assisted_living_per_10000, medicare_plan_options), by = "city") %>%
+        left_join(raw_iowa_pets %>% select(city, dog_parks_per_10000, vets_per_10000, pet_friendly_rentals_pct, pet_friendliness_index), by = "city") %>%
         mutate(
+          # Core scores
           safety_score = (normalize(violent_crime_rate, TRUE) + normalize(property_crime_rate, TRUE)) / 2,
           housing_score = (normalize(median_home_value, TRUE) + normalize(owner_occupied_pct)) / 2,
           education_score = (normalize(graduation_rate) + normalize(college_readiness_pct) + normalize(pct_bachelors)) / 3,
           economic_score = (normalize(median_household_income) + normalize(unemployment_rate, TRUE) + normalize(poverty_rate, TRUE)) / 3,
           healthcare_score = (normalize(life_expectancy) + normalize(health_insurance_coverage_pct)) / 2,
+          # New lifestyle scores
+          family_score = (normalize(daycare_centers_per_10000) + normalize(pediatricians_per_10000) + normalize(playgrounds_per_10000) + normalize(daycare_availability)) / 4,
+          climate_score = (normalize(sunny_days) + normalize(severe_weather_events, TRUE) + normalize(climate_comfort_index)) / 3,
+          senior_score = (normalize(senior_centers_per_10000) + normalize(assisted_living_per_10000) + normalize(medicare_plan_options)) / 3,
+          pet_score = (normalize(dog_parks_per_10000) + normalize(vets_per_10000) + normalize(pet_friendly_rentals_pct) + normalize(pet_friendliness_index)) / 4,
+          # Overall score (core categories only for default)
           overall_score = (safety_score + housing_score + education_score + economic_score + healthcare_score) / 5
         ) %>%
         arrange(desc(overall_score)) %>%

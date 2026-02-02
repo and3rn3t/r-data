@@ -28,6 +28,10 @@ All source data in `raw/` - these files are **immutable**.
 | `iowa_amenities_data.csv` | 20 | Quality of life metrics |
 | `iowa_infrastructure_data.csv` | 20 | Transportation, connectivity |
 | `iowa_historical_data.csv` | 20 | 1980-2020 trends |
+| `iowa_family_data.csv` | 20 | Family-friendly metrics (daycare, pediatrics, youth programs) |
+| `iowa_climate_data.csv` | 20 | Climate/weather patterns and severe weather risk |
+| `iowa_senior_data.csv` | 20 | Senior living and retirement metrics |
+| `iowa_pets_data.csv` | 20 | Pet-friendly amenities and services |
 | `iowa_cities_census.csv` | - | US Census population data |
 | `iowa_cities_raw.csv` | - | Iowa Data Portal data |
 

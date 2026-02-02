@@ -380,9 +380,12 @@ test_that("weighted_score warns when weights don't sum to 1", {
 
 # =============================================================================
 # NEW TESTS: calculate_city_scores function
+# Note: These tests are for the legacy calculate_city_scores in scripts/utils.R
+# The new modular version is tested in test-scoring.R
 # =============================================================================
 
 test_that("calculate_city_scores returns expected structure", {
+  skip("Legacy function - see R/scoring.R and test-scoring.R for new implementation")
   # Create minimal mock data
   mock_data <- list(
     major_cities = data.frame(
@@ -419,6 +422,7 @@ test_that("calculate_city_scores returns expected structure", {
 })
 
 test_that("calculate_city_scores ranks correctly", {
+  skip("Legacy function - see R/scoring.R and test-scoring.R for new implementation")
   mock_data <- list(
     major_cities = data.frame(
       city = c("HighScore", "LowScore"),

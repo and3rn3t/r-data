@@ -1,0 +1,21 @@
+city,county,population,daycare_centers_per_10000,avg_daycare_cost_monthly,pediatricians_per_10000,after_school_programs,youth_sports_leagues,playgrounds_per_10000,public_pools,summer_camps,child_care_availability_index,school_quality_rating,stem_programs,children_under_18_pct,single_parent_support_orgs,tutoring_centers_per_10000,children_library_programs,pediatric_urgent_care,family_restaurants_per_10000,daycare_availability
+Des Moines,Polk,214237,12.5,1250,4.2,85,45,8.5,12,28,72,7.8,42,24.5,18,3.2,156,5,12.5,78
+Cedar Rapids,Linn,137710,10.8,1150,3.8,62,35,7.2,8,18,68,7.5,28,23.8,12,2.8,98,3,10.2,72
+Davenport,Scott,101724,9.2,1050,3.2,45,28,6.5,6,14,62,7.2,22,23.2,10,2.4,72,2,8.8,65
+Sioux City,Woodbury,85797,8.5,950,2.8,38,22,5.8,5,12,58,6.8,18,24.8,8,2.0,58,2,7.5,60
+Iowa City,Johnson,74828,14.2,1350,5.5,52,32,9.2,6,22,82,8.5,48,22.5,14,4.2,125,3,14.5,85
+Waterloo,Black Hawk,67314,8.2,920,2.5,32,18,5.2,4,10,52,6.5,15,24.2,7,1.8,48,1,6.8,55
+Ames,Story,66427,11.5,1180,4.8,48,28,8.8,5,18,75,8.2,52,18.5,10,3.5,85,2,11.2,80
+West Des Moines,Polk,68723,15.8,1450,5.2,55,32,9.8,6,22,85,8.8,38,26.5,12,4.5,92,3,13.8,88
+Ankeny,Polk,67355,16.5,1380,4.8,58,38,10.5,5,25,88,9.2,35,32.5,10,4.2,102,2,14.2,92
+Council Bluffs,Pottawattamie,62230,8.8,980,2.8,35,22,5.5,4,11,55,6.8,16,24.5,8,2.0,52,2,7.2,58
+Dubuque,Dubuque,59667,10.2,1080,3.5,42,25,7.5,5,15,65,7.5,25,22.8,9,2.6,68,2,9.5,68
+Urbandale,Polk,45580,14.8,1420,4.5,42,28,9.2,4,18,82,8.5,28,25.8,8,3.8,72,2,12.5,85
+Cedar Falls,Black Hawk,40713,11.8,1120,4.2,38,22,8.2,4,14,72,8.0,32,20.5,7,3.2,62,2,10.8,75
+Marion,Linn,40359,12.5,1180,3.8,35,25,8.5,4,15,75,8.2,22,26.2,6,3.0,55,1,11.2,78
+Bettendorf,Scott,39102,13.8,1280,4.2,38,22,9.0,4,16,78,8.5,26,25.5,7,3.5,58,2,12.2,82
+Mason City,Cerro Gordo,27088,7.2,850,2.2,22,15,5.0,3,8,48,6.5,12,21.2,5,1.5,35,1,6.2,52
+Marshalltown,Marshall,26486,6.8,780,1.8,18,12,4.5,2,6,42,6.0,10,23.8,4,1.2,28,1,5.5,45
+Clinton,Clinton,24462,6.2,750,1.5,15,10,4.2,2,5,38,5.8,8,21.5,4,1.0,25,1,5.0,42
+Burlington,Des Moines,24505,6.8,820,2.0,18,12,4.8,2,7,45,6.2,10,22.2,5,1.2,32,1,5.8,48
+Fort Dodge,Webster,24264,6.5,800,1.8,16,12,4.5,2,6,42,6.0,9,22.8,4,1.0,28,1,5.5,45

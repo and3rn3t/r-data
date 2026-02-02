@@ -1,0 +1,376 @@
+/* Iowa Cities Dashboard - Theme CSS
+   ================================== */
+
+/* =============================================================================
+   CSS CUSTOM PROPERTIES (Variables)
+   Updated dynamically based on selected theme
+   ============================================================================= */
+
+:root {
+  /* Default (Light) Theme */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f7f7f7;
+  --bg-box: #ffffff;
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --text-muted: #888888;
+  --border-color: #dddddd;
+  --accent-color: #3498db;
+  --success-color: #27ae60;
+  --warning-color: #f39c12;
+  --danger-color: #e74c3c;
+  
+  /* Chart Colors */
+  --chart-bg: #ffffff;
+  --chart-grid: #eeeeee;
+  --chart-text: #333333;
+  
+  /* Table Colors */
+  --table-header-bg: #3498db;
+  --table-header-text: #ffffff;
+  --table-row-even: #f9f9f9;
+  --table-row-odd: #ffffff;
+  --table-row-hover: #e8f4fc;
+}
+
+/* =============================================================================
+   DARK THEME
+   ============================================================================= */
+
+.theme-dark {
+  --bg-primary: #1a1a2e;
+  --bg-secondary: #16213e;
+  --bg-box: #1a1a2e;
+  --text-primary: #eeeeee;
+  --text-secondary: #cccccc;
+  --text-muted: #888888;
+  --border-color: #2d3748;
+  --accent-color: #4299e1;
+  --success-color: #48bb78;
+  --warning-color: #ed8936;
+  --danger-color: #fc8181;
+  
+  --chart-bg: #1a1a2e;
+  --chart-grid: #2d3748;
+  --chart-text: #eeeeee;
+  
+  --table-header-bg: #2d3748;
+  --table-header-text: #eeeeee;
+  --table-row-even: #16213e;
+  --table-row-odd: #1a1a2e;
+  --table-row-hover: #2d3748;
+}
+
+/* =============================================================================
+   HIGH CONTRAST THEME
+   ============================================================================= */
+
+.theme-high_contrast {
+  --bg-primary: #000000;
+  --bg-secondary: #1a1a1a;
+  --bg-box: #000000;
+  --text-primary: #ffffff;
+  --text-secondary: #ffff00;
+  --text-muted: #00ffff;
+  --border-color: #ffffff;
+  --accent-color: #00ffff;
+  --success-color: #00ff00;
+  --warning-color: #ffff00;
+  --danger-color: #ff0000;
+  
+  --chart-bg: #000000;
+  --chart-grid: #333333;
+  --chart-text: #ffffff;
+  
+  --table-header-bg: #000000;
+  --table-header-text: #ffff00;
+  --table-row-even: #1a1a1a;
+  --table-row-odd: #000000;
+  --table-row-hover: #333333;
+}
+
+/* =============================================================================
+   IOWA GOLD THEME
+   ============================================================================= */
+
+.theme-iowa_gold {
+  --bg-primary: #fffbf0;
+  --bg-secondary: #fff5e0;
+  --bg-box: #ffffff;
+  --text-primary: #3d2e0a;
+  --text-secondary: #5c4a1f;
+  --text-muted: #8b7355;
+  --border-color: #e8d5b0;
+  --accent-color: #c9a227;
+  --success-color: #6b8e23;
+  --warning-color: #daa520;
+  --danger-color: #cd5c5c;
+  
+  --chart-bg: #fffbf0;
+  --chart-grid: #e8d5b0;
+  --chart-text: #3d2e0a;
+  
+  --table-header-bg: #c9a227;
+  --table-header-text: #3d2e0a;
+  --table-row-even: #fff5e0;
+  --table-row-odd: #fffbf0;
+  --table-row-hover: #f5e6c8;
+}
+
+/* =============================================================================
+   COMPONENT STYLES
+   ============================================================================= */
+
+/* Main content area */
+.content-wrapper {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Boxes */
+.box {
+  background-color: var(--bg-box) !important;
+  border-color: var(--border-color) !important;
+}
+
+.box-header {
+  color: var(--text-primary) !important;
+  border-bottom-color: var(--border-color) !important;
+}
+
+.box-title {
+  color: var(--text-primary) !important;
+}
+
+.box-body {
+  color: var(--text-primary) !important;
+}
+
+/* Sidebar */
+.main-sidebar {
+  background-color: var(--bg-primary) !important;
+}
+
+.sidebar-menu > li > a {
+  color: var(--text-secondary) !important;
+}
+
+.sidebar-menu > li:hover > a,
+.sidebar-menu > li.active > a {
+  background-color: var(--bg-secondary) !important;
+  color: var(--accent-color) !important;
+}
+
+/* Header */
+.main-header .navbar {
+  background-color: var(--accent-color) !important;
+}
+
+/* Forms */
+.form-control {
+  background-color: var(--bg-box) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.form-control:focus {
+  border-color: var(--accent-color) !important;
+  box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25) !important;
+}
+
+/* Selectize (dropdowns) */
+.selectize-input {
+  background-color: var(--bg-box) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.selectize-dropdown {
+  background-color: var(--bg-box) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.selectize-dropdown-content .option {
+  color: var(--text-primary) !important;
+}
+
+.selectize-dropdown-content .option:hover,
+.selectize-dropdown-content .option.active {
+  background-color: var(--accent-color) !important;
+  color: white !important;
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+}
+
+.btn-success {
+  background-color: var(--success-color) !important;
+  border-color: var(--success-color) !important;
+}
+
+.btn-warning {
+  background-color: var(--warning-color) !important;
+  border-color: var(--warning-color) !important;
+}
+
+.btn-danger {
+  background-color: var(--danger-color) !important;
+  border-color: var(--danger-color) !important;
+}
+
+.btn-default, .btn-info {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* Tables */
+.dataTables_wrapper {
+  color: var(--text-primary) !important;
+}
+
+table.dataTable {
+  background-color: var(--bg-box) !important;
+}
+
+table.dataTable thead th {
+  background-color: var(--table-header-bg) !important;
+  color: var(--table-header-text) !important;
+}
+
+table.dataTable tbody tr:nth-child(even) {
+  background-color: var(--table-row-even) !important;
+}
+
+table.dataTable tbody tr:nth-child(odd) {
+  background-color: var(--table-row-odd) !important;
+}
+
+table.dataTable tbody tr {
+  color: var(--text-primary) !important;
+}
+
+table.dataTable tbody tr:hover {
+  background-color: var(--table-row-hover) !important;
+}
+
+.dataTables_info,
+.dataTables_length,
+.dataTables_filter {
+  color: var(--text-secondary) !important;
+}
+
+.dataTables_paginate .paginate_button {
+  color: var(--text-primary) !important;
+}
+
+.dataTables_paginate .paginate_button.current {
+  background: var(--accent-color) !important;
+  color: white !important;
+  border-color: var(--accent-color) !important;
+}
+
+/* Sliders */
+.irs--shiny .irs-bar {
+  background: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+}
+
+.irs--shiny .irs-handle {
+  background-color: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+}
+
+.irs--shiny .irs-single,
+.irs--shiny .irs-from,
+.irs--shiny .irs-to {
+  background-color: var(--accent-color) !important;
+}
+
+/* Value boxes */
+.small-box,
+.info-box {
+  color: white !important;
+}
+
+/* Alerts */
+.alert-success {
+  background-color: var(--success-color) !important;
+  border-color: var(--success-color) !important;
+  color: white !important;
+}
+
+.alert-warning {
+  background-color: var(--warning-color) !important;
+  border-color: var(--warning-color) !important;
+}
+
+.alert-danger {
+  background-color: var(--danger-color) !important;
+  border-color: var(--danger-color) !important;
+  color: white !important;
+}
+
+/* Text utilities */
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+/* Links */
+a {
+  color: var(--accent-color);
+}
+
+a:hover {
+  color: var(--accent-color);
+  opacity: 0.8;
+}
+
+/* HR */
+hr {
+  border-color: var(--border-color);
+}
+
+/* =============================================================================
+   SCROLLBAR STYLING (for dark themes)
+   ============================================================================= */
+
+.theme-dark ::-webkit-scrollbar,
+.theme-high_contrast ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.theme-dark ::-webkit-scrollbar-track,
+.theme-high_contrast ::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+.theme-dark ::-webkit-scrollbar-thumb,
+.theme-high_contrast ::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 5px;
+}
+
+.theme-dark ::-webkit-scrollbar-thumb:hover,
+.theme-high_contrast ::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* =============================================================================
+   TRANSITIONS
+   ============================================================================= */
+
+body,
+.content-wrapper,
+.box,
+.main-sidebar,
+.form-control,
+.selectize-input,
+table.dataTable {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}

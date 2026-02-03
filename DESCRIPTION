@@ -38,7 +38,6 @@ Imports:
     plumber
 Suggests:
     testthat (>= 3.0.0),
-    pryr,
     lintr,
     covr,
     janitor,

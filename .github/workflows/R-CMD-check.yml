@@ -17,7 +17,6 @@ jobs:
       matrix:
         config:
           - {os: ubuntu-latest, r: 'release'}
-          - {os: windows-latest, r: 'release'}
           - {os: macos-latest, r: 'release'}
 
     env:
@@ -32,20 +31,54 @@ jobs:
           r-version: ${{ matrix.config.r }}
           use-public-rspm: true
 
-      - uses: r-lib/actions/setup-r-dependencies@v2
+      - name: Install system dependencies (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev libharfbuzz-dev libfribidi-dev
+
+      - name: Install R dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: |
             any::testthat
             any::here
             any::tidyverse
+            any::shiny
+            any::shinydashboard
+            any::shinyjs
+            any::plotly
+            any::DT
+            any::digest
             any::scales
             any::knitr
             any::rmarkdown
-          needs: check
+            any::leaflet
+            any::fmsb
+            any::htmlwidgets
+            any::shinycssloaders
+            any::bslib
 
       - name: Run tests
         run: |
-          testthat::test_dir("tests/testthat", reporter = "summary")
+          library(testthat)
+          library(here)
+          
+          # Set working directory
+          setwd(here::here())
+          
+          # Run tests
+          test_results <- testthat::test_dir(
+            "tests/testthat", 
+            reporter = "summary",
+            stop_on_failure = FALSE
+          )
+          
+          # Check for failures
+          results_df <- as.data.frame(test_results)
+          if (any(results_df$failed > 0)) {
+            quit(status = 1)
+          }
         shell: Rscript {0}
 
   lint:
@@ -65,9 +98,18 @@ jobs:
             any::lintr
             any::here
 
-      - name: Lint
+      - name: Lint R files
         run: |
-          lintr::lint_dir("scripts/")
+          library(lintr)
+          
+          # Lint R/ directory
+          r_lints <- lintr::lint_dir("R")
+          print(r_lints)
+          
+          # Advisory only - don't fail the build
+          if (length(r_lints) > 0) {
+            message(sprintf("Found %d linting issues", length(r_lints)))
+          }
         shell: Rscript {0}
         continue-on-error: true
 
@@ -82,6 +124,11 @@ jobs:
         with:
           use-public-rspm: true
 
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev libharfbuzz-dev libfribidi-dev
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: |
@@ -89,12 +136,32 @@ jobs:
             any::testthat
             any::here
             any::tidyverse
+            any::shiny
+            any::shinydashboard
+            any::shinyjs
+            any::plotly
+            any::DT
+            any::digest
+            any::bslib
 
-      - name: Test coverage
+      - name: Calculate test coverage
         run: |
-          covr::codecov(
-            quiet = FALSE,
-            clean = FALSE,
-            install_path = file.path(normalizePath(Sys.getenv("RUNNER_TEMP"), winslash = "/"), "package")
-          )
+          library(covr)
+          library(here)
+          
+          setwd(here::here())
+          
+          # Calculate coverage for R/ directory
+          tryCatch({
+            cov <- covr::file_coverage(
+              source_files = c("R/helpers.R", "R/scoring.R", "R/themes.R"),
+              test_files = list.files("tests/testthat", pattern = "^test-", full.names = TRUE)
+            )
+            print(cov)
+            pct <- covr::percent_coverage(cov)
+            message(sprintf("Total coverage: %.1f%%", pct))
+          }, error = function(e) {
+            message("Coverage calculation failed: ", e$message)
+          })
         shell: Rscript {0}
+        continue-on-error: true

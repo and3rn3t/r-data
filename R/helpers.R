@@ -94,11 +94,11 @@ load_cached_or_compute <- function(cache_hours = 24) {
 
   scores <- calculate_city_scores(data)
 
-  return(list(
+  list(
     scores = scores,
     data = data,
     cache_time = NULL
-  ))
+  )
 }
 
 #' Get cache freshness message
@@ -108,18 +108,18 @@ load_cached_or_compute <- function(cache_hours = 24) {
 #' @export
 get_cache_freshness <- function(cache_time) {
   if (is.null(cache_time)) {
-    return("Live data")
-  }
-
-  hours_ago <- as.numeric(difftime(Sys.time(), cache_time, units = "hours"))
-
-  if (hours_ago < 1) {
-    return("Updated < 1 hour ago")
-  } else if (hours_ago < 24) {
-    return(paste0("Updated ", round(hours_ago), " hours ago"))
+    "Live data"
   } else {
-    days_ago <- round(hours_ago / 24)
-    return(paste0("Updated ", days_ago, " days ago"))
+    hours_ago <- as.numeric(difftime(Sys.time(), cache_time, units = "hours"))
+
+    if (hours_ago < 1) {
+      "Updated < 1 hour ago"
+    } else if (hours_ago < 24) {
+      paste0("Updated ", round(hours_ago), " hours ago")
+    } else {
+      days_ago <- round(hours_ago / 24)
+      paste0("Updated ", days_ago, " days ago")
+    }
   }
 }
 

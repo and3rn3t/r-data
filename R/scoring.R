@@ -60,7 +60,7 @@ SCORE_CATEGORIES <- list(
     columns = c("connectivity_score"),
     default_weight = 0.07
   ),
-  
+
   # New categories
   family = list(
     name = "Family",
@@ -132,7 +132,7 @@ LIFESTYLE_MODES <- list(
     ),
     enabled_optional = c()
   ),
-  
+
   family_focus = list(
     name = "Family Focus",
     description = "Prioritizes safety, schools, and family amenities",
@@ -152,7 +152,7 @@ LIFESTYLE_MODES <- list(
     ),
     enabled_optional = c("family")
   ),
-  
+
   career_focus = list(
     name = "Career Focus",
     description = "Emphasizes jobs, economy, and connectivity",
@@ -172,7 +172,7 @@ LIFESTYLE_MODES <- list(
     ),
     enabled_optional = c()
   ),
-  
+
   retirement_focus = list(
     name = "Retirement Focus",
     description = "Prioritizes healthcare, safety, and senior services",
@@ -192,7 +192,7 @@ LIFESTYLE_MODES <- list(
     ),
     enabled_optional = c("climate", "senior")
   ),
-  
+
   outdoor_pet_lover = list(
     name = "Outdoor & Pet Lover",
     description = "Emphasizes environment, climate, and pet-friendliness",
@@ -212,7 +212,7 @@ LIFESTYLE_MODES <- list(
     ),
     enabled_optional = c("climate", "pet")
   ),
-  
+
   custom = list(
     name = "Custom",
     description = "Set your own priorities with the sliders below",
@@ -227,7 +227,7 @@ LIFESTYLE_MODES <- list(
 # =============================================================================
 
 #' Get lifestyle mode configuration
-#' 
+#'
 #' @param mode_name Character. One of the lifestyle mode names
 #' @return List with mode configuration
 #' @export
@@ -240,7 +240,7 @@ get_lifestyle_mode <- function(mode_name = "balanced") {
 }
 
 #' Get lifestyle mode names for selectInput
-#' 
+#'
 #' @return Named vector for use in selectInput choices
 #' @export
 get_lifestyle_choices <- function() {
@@ -249,40 +249,40 @@ get_lifestyle_choices <- function() {
 }
 
 #' Get weights for a lifestyle mode
-#' 
+#'
 #' @param mode_name Character. Lifestyle mode name
 #' @return Named numeric vector of weights
 #' @export
 get_lifestyle_weights <- function(mode_name = "balanced") {
   mode <- get_lifestyle_mode(mode_name)
-  
+
   if (is.null(mode$weights)) {
     # Return default weights for custom mode
     return(get_default_weights())
   }
-  
+
   unlist(mode$weights)
 }
 
 #' Get default weights (equal for core, zero for optional)
-#' 
+#'
 #' @return Named numeric vector of weights
 #' @export
 get_default_weights <- function() {
   core <- get_core_categories()
   optional <- get_optional_categories()
   n_core <- length(core)
-  
+
   weights <- c(
     setNames(rep(1 / n_core, n_core), core),
     setNames(rep(0, length(optional)), optional)
   )
-  
+
   weights
 }
 
 #' Normalize weights to sum to 1
-#' 
+#'
 #' @param weights Named numeric vector of weights
 #' @return Normalized weights
 #' @export
@@ -296,7 +296,7 @@ normalize_weights <- function(weights) {
 }
 
 #' Convert slider values (1-10) to normalized weights
-#' 
+#'
 #' @param slider_values Named list of slider values
 #' @return Normalized weight vector
 #' @export
@@ -310,14 +310,14 @@ sliders_to_weights <- function(slider_values) {
 # =============================================================================
 
 #' Calculate custom score based on weights
-#' 
+#'
 #' @param data Data frame with score columns
 #' @param weights Named numeric vector of weights
 #' @return Numeric vector of custom scores
 #' @export
 calculate_custom_score <- function(data, weights) {
   weights <- normalize_weights(weights)
-  
+
   # Map category names to actual column names
   column_map <- list(
     safety = "safety_score",
@@ -332,9 +332,9 @@ calculate_custom_score <- function(data, weights) {
     senior = "senior_score",
     pet = "pet_score"
   )
-  
+
   score <- rep(0, nrow(data))
-  
+
   for (cat in names(weights)) {
     if (weights[cat] > 0) {
       col <- column_map[[cat]]
@@ -343,12 +343,12 @@ calculate_custom_score <- function(data, weights) {
       }
     }
   }
-  
+
   round(score, 1)
 }
 
 #' Calculate all category scores for a dataset
-#' 
+#'
 #' @param data List of data frames from load_datasets
 #' @return Data frame with city scores
 #' @export
@@ -357,14 +357,14 @@ calculate_city_scores <- function(data) {
   # Use population_2020 and rename to population for consistency
   scores <- data$major_cities %>%
     select(city, region, county, population = population_2020, latitude, longitude)
-  
+
   # Add economic data (includes median_household_income)
   if (!is.null(data$economic)) {
     econ_base <- data$economic %>%
       select(city, median_household_income)
     scores <- left_join(scores, econ_base, by = "city")
   }
-  
+
   # Add crime/safety scores
   if (!is.null(data$crime)) {
     crime <- data$crime %>%
@@ -377,7 +377,7 @@ calculate_city_scores <- function(data) {
       select(city, safety_score, violent_crime_rate, property_crime_rate)
     scores <- left_join(scores, crime, by = "city")
   }
-  
+
   # Add housing scores
   if (!is.null(data$housing)) {
     housing <- data$housing %>%
@@ -391,7 +391,7 @@ calculate_city_scores <- function(data) {
       select(city, housing_score, median_home_value, median_rent)
     scores <- left_join(scores, housing, by = "city")
   }
-  
+
   # Add education scores
   if (!is.null(data$education)) {
     education <- data$education %>%
@@ -405,7 +405,7 @@ calculate_city_scores <- function(data) {
       select(city, education_score, graduation_rate)
     scores <- left_join(scores, education, by = "city")
   }
-  
+
   # Add economic scores
   if (!is.null(data$economic)) {
     economic <- data$economic %>%
@@ -419,7 +419,7 @@ calculate_city_scores <- function(data) {
       select(city, economic_score, unemployment_rate)
     scores <- left_join(scores, economic, by = "city")
   }
-  
+
   # Add healthcare scores
   if (!is.null(data$healthcare)) {
     healthcare <- data$healthcare %>%
@@ -433,7 +433,7 @@ calculate_city_scores <- function(data) {
       select(city, healthcare_score, life_expectancy)
     scores <- left_join(scores, healthcare, by = "city")
   }
-  
+
   # Add livability scores from amenities
   if (!is.null(data$amenities)) {
     livability <- data$amenities %>%
@@ -446,7 +446,7 @@ calculate_city_scores <- function(data) {
       select(city, livability_score_calc)
     scores <- left_join(scores, livability, by = "city")
   }
-  
+
   # Add connectivity scores from infrastructure
   if (!is.null(data$infrastructure)) {
     connectivity <- data$infrastructure %>%
@@ -459,7 +459,7 @@ calculate_city_scores <- function(data) {
       select(city, connectivity_score)
     scores <- left_join(scores, connectivity, by = "city")
   }
-  
+
   # Initialize optional category scores as NA (will be populated when data exists)
   scores <- scores %>%
     mutate(
@@ -468,7 +468,7 @@ calculate_city_scores <- function(data) {
       senior_score = NA_real_,
       pet_score = NA_real_
     )
-  
+
   # Add family scores if data exists
   if (!is.null(data$family)) {
     family <- data$family %>%
@@ -483,7 +483,7 @@ calculate_city_scores <- function(data) {
       select(-family_score) %>%
       left_join(family, by = "city")
   }
-  
+
   # Add climate scores if data exists
   if (!is.null(data$climate)) {
     climate <- data$climate %>%
@@ -498,7 +498,7 @@ calculate_city_scores <- function(data) {
       select(-climate_score) %>%
       left_join(climate, by = "city")
   }
-  
+
   # Add senior scores if data exists
   if (!is.null(data$senior)) {
     senior <- data$senior %>%
@@ -513,7 +513,7 @@ calculate_city_scores <- function(data) {
       select(-senior_score) %>%
       left_join(senior, by = "city")
   }
-  
+
   # Add pet scores if data exists
   if (!is.null(data$pet)) {
     pet <- data$pet %>%
@@ -528,7 +528,7 @@ calculate_city_scores <- function(data) {
       select(-pet_score) %>%
       left_join(pet, by = "city")
   }
-  
+
   # Calculate overall score using default weights
   default_weights <- get_default_weights()
   scores <- scores %>%
@@ -537,7 +537,7 @@ calculate_city_scores <- function(data) {
       rank = row_number(desc(overall_score))
     ) %>%
     arrange(rank)
-  
+
   scores
 }
 

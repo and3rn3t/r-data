@@ -11,7 +11,7 @@ library(here)
 # =============================================================================
 
 #' Load all raw datasets
-#' 
+#'
 #' @param data_files Named vector of file names
 #' @param data_dir Directory containing data files
 #' @return Named list of data frames
@@ -37,7 +37,7 @@ load_all_data <- function(data_files = NULL, data_dir = here("data/raw")) {
       pets = "iowa_pets_data.csv"
     )
   }
-  
+
   datasets <- list()
   for (name in names(data_files)) {
     path <- file.path(data_dir, data_files[[name]])
@@ -51,30 +51,30 @@ load_all_data <- function(data_files = NULL, data_dir = here("data/raw")) {
       )
     }
   }
-  
+
   # Rename 'pets' to 'pet' for consistency with scoring
   if (!is.null(datasets$pets)) {
     datasets$pet <- datasets$pets
     datasets$pets <- NULL
   }
-  
+
   datasets
 }
 
 #' Load cached data or compute from raw files
-#' 
+#'
 #' @param cache_hours Maximum cache age in hours
 #' @return List with scores and data
 #' @export
 load_cached_or_compute <- function(cache_hours = 24) {
   cache_file <- here("data/cache/city_scores.rds")
   cache_info_file <- here("data/cache/cache_info.rds")
-  
+
   if (file.exists(cache_file) && file.exists(cache_info_file)) {
     cache_info <- tryCatch(readRDS(cache_info_file), error = function(e) NULL)
-    
-    if (!is.null(cache_info) && 
-        difftime(Sys.time(), cache_info$created, units = "hours") < cache_hours) {
+
+    if (!is.null(cache_info) &&
+          difftime(Sys.time(), cache_info$created, units = "hours") < cache_hours) {
       message("Loading cached city scores...")
       return(list(
         scores = readRDS(cache_file),
@@ -83,26 +83,26 @@ load_cached_or_compute <- function(cache_hours = 24) {
       ))
     }
   }
-  
+
   message("Computing city scores (run cache_city_data.R to speed up)...")
   data <- load_all_data()
-  
+
   # Source scoring module if not already loaded
   if (!exists("calculate_city_scores")) {
     source(here("R/scoring.R"))
   }
-  
+
   scores <- calculate_city_scores(data)
-  
+
   return(list(
-    scores = scores, 
+    scores = scores,
     data = data,
     cache_time = NULL
   ))
 }
 
 #' Get cache freshness message
-#' 
+#'
 #' @param cache_time POSIXct cache time or NULL
 #' @return Character string describing data freshness
 #' @export
@@ -110,9 +110,9 @@ get_cache_freshness <- function(cache_time) {
   if (is.null(cache_time)) {
     return("Live data")
   }
-  
+
   hours_ago <- as.numeric(difftime(Sys.time(), cache_time, units = "hours"))
-  
+
   if (hours_ago < 1) {
     return("Updated < 1 hour ago")
   } else if (hours_ago < 24) {
@@ -128,7 +128,7 @@ get_cache_freshness <- function(cache_time) {
 # =============================================================================
 
 #' Validate city input against known cities
-#' 
+#'
 #' @param city City name to validate
 #' @param valid_cities Vector of valid city names
 #' @return TRUE if valid, FALSE otherwise
@@ -138,7 +138,7 @@ validate_city <- function(city, valid_cities) {
 }
 
 #' Safely filter data by city
-#' 
+#'
 #' @param data Data frame to filter
 #' @param city City name
 #' @param valid_cities Optional vector of valid cities
@@ -160,7 +160,7 @@ safe_filter_city <- function(data, city, valid_cities = NULL) {
 # =============================================================================
 
 #' Safe render wrapper with error handling
-#' 
+#'
 #' @param expr Expression to evaluate
 #' @param default Default value on error
 #' @param error_msg Error message to log
@@ -177,7 +177,7 @@ safe_render <- function(expr, default = NULL, error_msg = "Error loading data") 
 }
 
 #' Format number with commas
-#' 
+#'
 #' @param x Numeric value
 #' @return Formatted string
 #' @export
@@ -186,7 +186,7 @@ format_number <- function(x) {
 }
 
 #' Format currency
-#' 
+#'
 #' @param x Numeric value
 #' @param prefix Currency prefix (default "$")
 #' @return Formatted string
@@ -196,7 +196,7 @@ format_currency <- function(x, prefix = "$") {
 }
 
 #' Format percentage
-#' 
+#'
 #' @param x Numeric value
 #' @param digits Decimal places
 #' @return Formatted string
@@ -210,7 +210,7 @@ format_pct <- function(x, digits = 1) {
 # =============================================================================
 
 #' Create session logger
-#' 
+#'
 #' @param session Shiny session object
 #' @param log_dir Directory for log files
 #' @return List with log functions
@@ -219,10 +219,10 @@ create_session_logger <- function(session, log_dir = here("outputs/logs")) {
   if (!dir.exists(log_dir)) {
     dir.create(log_dir, recursive = TRUE)
   }
-  
+
   session_id <- paste0("session_", format(Sys.time(), "%Y%m%d_%H%M%S"), "_", sample(1000:9999, 1))
   log_file <- file.path(log_dir, paste0("usage_", format(Sys.Date(), "%Y%m%d"), ".log"))
-  
+
   log_event <- function(event, details = "") {
     tryCatch({
       timestamp <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
@@ -230,7 +230,7 @@ create_session_logger <- function(session, log_dir = here("outputs/logs")) {
       cat(log_entry, "\n", file = log_file, append = TRUE)
     }, error = function(e) NULL)
   }
-  
+
   list(
     session_id = session_id,
     log_file = log_file,
@@ -243,7 +243,7 @@ create_session_logger <- function(session, log_dir = here("outputs/logs")) {
 # =============================================================================
 
 #' Generate shareable URL with query parameters
-#' 
+#'
 #' @param base_url Base URL of the app
 #' @param weights Named list of weight values
 #' @param lifestyle_mode Lifestyle mode name
@@ -251,20 +251,20 @@ create_session_logger <- function(session, log_dir = here("outputs/logs")) {
 #' @export
 generate_share_url <- function(base_url, weights, lifestyle_mode = "custom") {
   params <- list(mode = lifestyle_mode)
-  
+
   # Add non-zero weights
   for (name in names(weights)) {
     if (weights[[name]] > 0) {
       params[[paste0("w_", name)]] <- weights[[name]]
     }
   }
-  
+
   query <- paste(names(params), params, sep = "=", collapse = "&")
   paste0(base_url, "?", query)
 }
 
 #' Parse weights from URL query parameters
-#' 
+#'
 #' @param query Named list from parseQueryString
 #' @return Named list of weights
 #' @export
@@ -274,7 +274,7 @@ parse_url_weights <- function(query) {
     healthcare = 5, livability = 5, connectivity = 3,
     family = 0, climate = 0, senior = 0, pet = 0
   )
-  
+
   for (name in names(query)) {
     if (startsWith(name, "w_")) {
       weight_name <- sub("w_", "", name)
@@ -283,7 +283,7 @@ parse_url_weights <- function(query) {
       }
     }
   }
-  
+
   weights
 }
 
@@ -292,7 +292,7 @@ parse_url_weights <- function(query) {
 # =============================================================================
 
 #' Calculate Iowa state averages for comparison
-#' 
+#'
 #' @param scores Data frame of city scores
 #' @return Single row data frame with state averages
 #' @export

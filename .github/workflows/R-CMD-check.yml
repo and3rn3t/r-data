@@ -9,6 +9,8 @@ on:
 jobs:
   R-CMD-check:
     runs-on: ${{ matrix.config.os }}
+    # macOS CRAN mirrors can be unreliable - don't fail the whole workflow
+    continue-on-error: ${{ matrix.config.os == 'macos-latest' }}
 
     name: ${{ matrix.config.os }} (${{ matrix.config.r }})
 

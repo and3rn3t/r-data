@@ -1,0 +1,77 @@
+FROM rocker/shiny:4.4.0
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    libxml2-dev \
+    libfontconfig1-dev \
+    libfreetype6-dev \
+    libpng-dev \
+    libtiff5-dev \
+    libjpeg-dev \
+    libharfbuzz-dev \
+    libfribidi-dev \
+    libgdal-dev \
+    libgeos-dev \
+    libproj-dev \
+    libudunits2-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install R packages in stages for better error handling
+# Core tidyverse first
+RUN R -e "install.packages('tidyverse', repos='https://cloud.r-project.org', dependencies=TRUE)"
+
+# Shiny ecosystem
+RUN R -e "install.packages(c( \
+    'shiny', \
+    'shinydashboard', \
+    'shinyWidgets', \
+    'shinycssloaders', \
+    'shinyjs', \
+    'bslib' \
+), repos='https://cloud.r-project.org')"
+
+# Visualization and data packages
+RUN R -e "install.packages(c( \
+    'plotly', \
+    'DT', \
+    'leaflet', \
+    'scales', \
+    'viridis', \
+    'RColorBrewer' \
+), repos='https://cloud.r-project.org')"
+
+# Utility packages
+RUN R -e "install.packages(c( \
+    'here', \
+    'config', \
+    'digest', \
+    'htmltools', \
+    'htmlwidgets' \
+), repos='https://cloud.r-project.org')"
+
+# Verify tidyverse is installed
+RUN R -e "library(tidyverse); cat('tidyverse OK\n')"
+
+# Create app directory
+WORKDIR /app
+
+# Copy application files
+COPY app.R .
+COPY R/ R/
+COPY data/ data/
+COPY config.yml .
+COPY www/ www/
+COPY scripts/utils.R scripts/utils.R
+COPY scripts/constants.R scripts/constants.R
+COPY scripts/security.R scripts/security.R
+
+# Expose Hugging Face Spaces port (7860)
+EXPOSE 7860
+
+# Set environment variable for Shiny to use port 7860
+ENV SHINY_PORT=7860
+
+# Run the Shiny app
+CMD ["R", "-e", "shiny::runApp('/app', host='0.0.0.0', port=as.integer(Sys.getenv('SHINY_PORT', 7860)))"]

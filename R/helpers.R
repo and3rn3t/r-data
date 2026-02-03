@@ -151,15 +151,9 @@ safe_filter_city <- function(data, city, valid_cities = NULL) {
   filter(data, city == !!city)
 }
 
-#' Validate category selection
-#' 
-#' @param category Category name to validate
-#' @param valid_categories Vector of valid category names
-#' @return TRUE if valid, FALSE otherwise
-#' @export
-validate_category <- function(category, valid_categories) {
-  !is.null(category) && category %in% valid_categories
-}
+# Note: validate_category() is defined in scripts/security.R with additional
+# input validation (length checks, type checks). Use that version for user input.
+# This simple wrapper is kept for internal use where input is already validated.
 
 # =============================================================================
 # RENDERING HELPERS

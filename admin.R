@@ -24,8 +24,17 @@ source(here("scripts/security.R"))
 get_admin_password_hash <- function() {
   password <- Sys.getenv("ADMIN_PASSWORD", unset = "")
   if (password == "") {
+    # Check if we're in production mode
+    is_production <- Sys.getenv("R_ENV", unset = "development") == "production"
+    if (is_production) {
+      stop("ADMIN_PASSWORD environment variable must be set in production mode")
+    }
     warning("ADMIN_PASSWORD not set. Using default (INSECURE - for development only)")
-    password <- "change_me_in_production"
+    password <- "change_me_in_production_12345"  # Slightly stronger default
+  }
+  # Validate password strength
+  if (nchar(password) < 12) {
+    warning("ADMIN_PASSWORD should be at least 12 characters for security")
   }
   digest::digest(password, algo = "sha256")
 }

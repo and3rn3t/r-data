@@ -95,6 +95,13 @@ validate_category <- function(category, allowed_categories) {
 # =============================================================================
 
 #' Create a rate limiter for a session
+#' 
+#' NOTE: This is an in-memory rate limiter. Limitations:
+#' - State is lost on server restart
+#' - Does not work across multiple R processes/instances
+#' - For production multi-instance deployments, consider using Redis or
+#'   a database-backed rate limiter instead
+#' 
 #' @param max_requests Maximum requests allowed in time window
 #' @param window_seconds Time window in seconds
 #' @return Rate limiter environment
@@ -174,13 +181,14 @@ create_security_context <- function(session) {
 ctx$token <- generate_session_token()
   
   # Session fingerprint (for detecting session hijacking)
+  # Using SHA-256 for consistency with other hashing in the app
   ctx$fingerprint <- digest::digest(
     paste(
       session$request$HTTP_USER_AGENT %||% "",
       session$request$HTTP_ACCEPT_LANGUAGE %||% "",
       sep = "|"
     ),
-    algo = "md5"
+    algo = "sha256"
   )
   
   # Session start time
@@ -220,7 +228,7 @@ validate_session <- function(ctx, session) {
       session$request$HTTP_ACCEPT_LANGUAGE %||% "",
       sep = "|"
     ),
-    algo = "md5"
+    algo = "sha256"
   )
   
   if (current_fingerprint != ctx$fingerprint) {

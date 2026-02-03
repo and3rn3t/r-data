@@ -46,17 +46,33 @@ compute_scores <- function() {
       left_join(api_data$education, by = "city") %>%
       left_join(api_data$economic, by = "city") %>%
       mutate(
-        safety_score = 100 - normalize(violent_crime_rate %||% 0),
-        housing_score = 100 - normalize(median_home_value %||% 200000),
-        education_score = normalize(graduation_rate %||% 85),
-        economic_score = normalize(median_household_income %||% 50000)
+        # Use coalesce for NA handling within vectors
+        safety_score = 100 - normalize(coalesce(violent_crime_rate, median(violent_crime_rate, na.rm = TRUE))),
+        housing_score = 100 - normalize(coalesce(median_home_value, median(median_home_value, na.rm = TRUE))),
+        education_score = normalize(coalesce(graduation_rate, median(graduation_rate, na.rm = TRUE))),
+        economic_score = normalize(coalesce(median_household_income, median(median_household_income, na.rm = TRUE)))
       ) %>%
       mutate(
         overall_score = (safety_score + housing_score + education_score + economic_score) / 4
       ) %>%
       arrange(desc(overall_score))
   }, error = function(e) {
-    message("Error computing scores: ", e$message)
+    # Log full error details
+    is_dev <- Sys.getenv("R_ENV", unset = "development") != "production"
+    error_msg <- paste("Error computing scores:", e$message)
+    
+    if (is_dev) {
+      # In development, show full error with traceback
+      message(error_msg)
+      message("Traceback: ", paste(capture.output(traceback()), collapse = "\n"))
+    } else {
+      # In production, log to file
+      log_dir <- here("outputs/logs/api")
+      if (!dir.exists(log_dir)) dir.create(log_dir, recursive = TRUE)
+      log_file <- file.path(log_dir, paste0("errors_", format(Sys.Date(), "%Y%m%d"), ".log"))
+      cat(format(Sys.time()), "|", error_msg, "\n", file = log_file, append = TRUE)
+    }
+    
     data.frame()
   })
 }

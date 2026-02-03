@@ -92,8 +92,17 @@ calculate_ci <- function(x, conf.level = 0.95) {
 #' @param df A data frame
 #' @return A data frame with standardized column names
 standardize_names <- function(df) {
+  # Check if janitor is available
+  if (requireNamespace("janitor", quietly = TRUE)) {
+    df <- janitor::clean_names(df)
+  } else {
+    # Fallback: basic cleaning without janitor
+    names(df) <- tolower(names(df))
+    names(df) <- gsub("[^a-z0-9_]", "_", names(df))
+    names(df) <- gsub("_+", "_", names(df))
+    names(df) <- gsub("^_|_$", "", names(df))
+  }
   df %>%
-    janitor::clean_names() %>%
     rename_with(~str_replace_all(., "\\.", "_"))
 }
 

@@ -25,6 +25,9 @@ library(shinycssloaders)
 # LOAD MODULES
 # =============================================================================
 
+# Load utility functions first (includes normalize function)
+source(here("scripts/utils.R"))
+
 # Load modular components
 source(here("R/themes.R"))
 source(here("R/scoring.R"))

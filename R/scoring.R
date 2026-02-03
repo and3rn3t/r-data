@@ -354,9 +354,16 @@ calculate_custom_score <- function(data, weights) {
 #' @export
 calculate_city_scores <- function(data) {
   # Start with major cities as base
+  # Use population_2020 and rename to population for consistency
   scores <- data$major_cities %>%
-    select(city, region, county, population, latitude, longitude,
-           median_household_income)
+    select(city, region, county, population = population_2020, latitude, longitude)
+  
+  # Add economic data (includes median_household_income)
+  if (!is.null(data$economic)) {
+    econ_base <- data$economic %>%
+      select(city, median_household_income)
+    scores <- left_join(scores, econ_base, by = "city")
+  }
   
   # Add crime/safety scores
   if (!is.null(data$crime)) {
@@ -379,7 +386,7 @@ calculate_city_scores <- function(data) {
                         normalize(median_rent, reverse = TRUE) * 0.3 +
                         normalize(owner_occupied_pct) * 0.2 +
                         normalize(vacancy_rate, reverse = TRUE) * 0.1 +
-                        normalize(home_value_change_5yr) * 0.1
+                        normalize(home_value_change_1yr) * 0.1
       ) %>%
       select(city, housing_score, median_home_value, median_rent)
     scores <- left_join(scores, housing, by = "city")
@@ -389,14 +396,13 @@ calculate_city_scores <- function(data) {
   if (!is.null(data$education)) {
     education <- data$education %>%
       mutate(
-        education_score = normalize(high_school_graduation_rate) * 0.25 +
-                          normalize(pct_college_ready) * 0.25 +
-                          normalize(pct_bachelors_degree) * 0.20 +
-                          normalize(school_spending_per_pupil) * 0.15 +
+        education_score = normalize(graduation_rate) * 0.25 +
+                          normalize(college_readiness_pct) * 0.25 +
+                          normalize(pct_bachelors) * 0.20 +
+                          normalize(per_pupil_spending) * 0.15 +
                           normalize(student_teacher_ratio, reverse = TRUE) * 0.15
       ) %>%
-      select(city, education_score, high_school_graduation_rate = high_school_graduation_rate,
-             graduation_rate = high_school_graduation_rate)
+      select(city, education_score, graduation_rate)
     scores <- left_join(scores, education, by = "city")
   }
   
@@ -419,8 +425,8 @@ calculate_city_scores <- function(data) {
     healthcare <- data$healthcare %>%
       mutate(
         healthcare_score = normalize(life_expectancy) * 0.25 +
-                           normalize(pct_with_insurance) * 0.25 +
-                           normalize(physicians_per_10000) * 0.20 +
+                           normalize(health_insurance_coverage_pct) * 0.25 +
+                           normalize(primary_care_physicians_per_1000) * 0.20 +
                            normalize(obesity_rate, reverse = TRUE) * 0.15 +
                            normalize(smoking_rate, reverse = TRUE) * 0.15
       ) %>%
@@ -433,8 +439,8 @@ calculate_city_scores <- function(data) {
     livability <- data$amenities %>%
       mutate(
         livability_score_calc = normalize(livability_score) * 0.3 +
-                                normalize(restaurants_per_10000) * 0.2 +
-                                normalize(parks_per_10000) * 0.2 +
+                                normalize(restaurants_per_1000) * 0.2 +
+                                normalize(fitness_centers_per_1000) * 0.2 +
                                 normalize(cost_of_living_index, reverse = TRUE) * 0.3
       ) %>%
       select(city, livability_score_calc)
@@ -446,9 +452,9 @@ calculate_city_scores <- function(data) {
     connectivity <- data$infrastructure %>%
       mutate(
         connectivity_score = normalize(broadband_coverage_pct) * 0.35 +
-                             normalize(transit_routes) * 0.25 +
+                             normalize(bus_routes) * 0.25 +
                              normalize(ev_charging_stations) * 0.20 +
-                             normalize(avg_commute_time, reverse = TRUE) * 0.20
+                             normalize(avg_commute_time_min, reverse = TRUE) * 0.20
       ) %>%
       select(city, connectivity_score)
     scores <- left_join(scores, connectivity, by = "city")
@@ -467,9 +473,9 @@ calculate_city_scores <- function(data) {
   if (!is.null(data$family)) {
     family <- data$family %>%
       mutate(
-        family_score = normalize(daycare_availability) * 0.25 +
+        family_score = normalize(daycare_centers_per_10000) * 0.25 +
                        normalize(pediatricians_per_10000) * 0.25 +
-                       normalize(youth_programs_per_10000) * 0.25 +
+                       normalize(youth_sports_leagues) * 0.25 +
                        normalize(playgrounds_per_10000) * 0.25
       ) %>%
       select(city, family_score)

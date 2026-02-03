@@ -103,10 +103,21 @@ parse_usage_logs <- function(log_dir = here("outputs/logs")) {
 #' Get system metrics
 #' @return List of system metrics
 get_system_metrics <- function() {
+  # Get memory usage - pryr is optional
+  memory_info <- tryCatch({
+    if (requireNamespace("pryr", quietly = TRUE)) {
+      format(pryr::mem_used(), units = "MB")
+    } else {
+      # Fallback: use gc() to estimate memory
+      gc_info <- gc(verbose = FALSE)
+      paste0(round(sum(gc_info[, 2]), 1), " MB (estimated)")
+    }
+  }, error = function(e) "Unknown")
+  
   list(
     r_version = R.version.string,
     platform = R.version$platform,
-    memory_used = format(pryr::mem_used(), units = "MB"),
+    memory_used = memory_info,
     working_dir = getwd(),
     data_files = length(list.files(here("data/raw"), pattern = "\\.csv$")),
     cache_exists = file.exists(here("data/cache/city_scores.rds")),
